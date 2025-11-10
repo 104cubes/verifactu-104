@@ -30,3 +30,22 @@
 ### 1) Descargar el módulo
 
 Descargar ZIP desde GitHub:
+
+NO es una instalación estándar de dolibarr. Requiere algo de conocimiento técnico. Necesitas acceso al servidor y a la BDD
+
+* El ZIP descargado, lo subes a tu servidor de dolibarr a la carpeta /custom
+* En la base de datos debes añadir 2 columnas a la tabla TU_PREFIJO_facture (p. ej lix_fature. 
+  * Añade las columnas a esa tabla: 
+    	hash_verifactu	varchar(255)	NULL	
+	    hash_prev	varchar(255)	NULL
+  * Sentencia SQL: 
+  ALTER TABLE TU_PREFIJO_facture
+  ADD COLUMN ash_verifactu VARCHAR(255) NULL,
+  ADD COLUMN ash_prev VARCHAR(255) NULL;
+  Ejemplo con `refijop de tablas 'lix'
+  ALTER TABLE lix_facture
+  ADD COLUMN ash_verifactu VARCHAR(255) NULL,
+  ADD COLUMN ash_prev VARCHAR(255) NULL;
+
+Cualquier comentario o pregunta no dudees en hacérmelo a través de la página de contacto de 104cubes.com
+
