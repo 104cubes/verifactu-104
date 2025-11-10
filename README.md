@@ -1,9 +1,9 @@
-# VERIFACTU FOR [DOLIBARR ERP & CRM](https://www.dolibarr.org) (Gratuito)
-# 🇪🇸 Verifactu 104 - Módulo Dolibarr ERP/CRM (AEAT - Plan Antifraude)
+# VERIFACTU PARA S.L (Gratuito)
+# 🇪🇸 Verifactu 104 - Módulo Dolibarr ERP/CRM (AEAT - Plan Antifraude modalidad Sociedad Limitada)
 
 ## 🌟 Descripción General
 
-**Verifactu 104** es un módulo diseñado para **Dolibarr ERP/CRM** que implementa el **Sistema de Registro Encadenado y Firma de Facturas** conforme al Real Decreto de Veri\*factu (Plan Antifraude de la AEAT - Agencia Tributaria Española).
+**Verifactu 104** es un módulo diseñado por 104 CUBES S.L para **Dolibarr ERP/CRM** que implementa el **Sistema de Registro Encadenado y Firma de Facturas** conforme al Real Decreto de Veri\*factu (Plan Antifraude de la AEAT - Agencia Tributaria Española).
 
 Este módulo garantiza que tus facturas cumplan con los requisitos de trazabilidad y seguridad exigidos, añadiendo las siguientes funcionalidades clave:
 
