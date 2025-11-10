@@ -33,7 +33,7 @@ Descargar ZIP desde GitHub:
 
 NO es una instalación estándar de dolibarr. Requiere algo de conocimiento técnico. Necesitas acceso al servidor y a la BDD
 
-* El ZIP descargado, lo subes a tu servidor de dolibarr a la carpeta /custom
+* El ZIP descargado, lo descomprimes, y subes la carpeta a tu servidor de dolibarr a la carpeta /custom (o bien subes el zip y lo descomprimes allí)
 * En la base de datos debes añadir 2 columnas a la tabla TU_PREFIJO_facture (p. ej lix_fature. 
   * Añade las columnas a esa tabla: 
     	hash_verifactu	varchar(255)	NULL	
