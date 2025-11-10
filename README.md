@@ -26,7 +26,7 @@ Para la correcta ejecución del módulo Verifactu 104, se requieren las siguient
 | **Dolibarr ERP/CRM** | 16.0 a 22.x | Probado en versiones 20 y 22. |
 | **PHP** | 7.4+ | Versión mínima recomendada. |
 | **Extensiones PHP** | `openssl`, `gd` | Obligatorias para el cálculo de hash y la generación del QR. |
-| **Sistema Operativo** | Linux (Recomendado) | Funciona también en entornos Windows. Enm cualquier caso debe ser un entorno Apache php sql|
+| **Sistema Operativo** | Linux (Recomendado) | Funciona también en entornos Windows. En cualquier caso debe ser un entorno Apache php sql|
 
 ## 🚀 Instalación y Configuración
 
