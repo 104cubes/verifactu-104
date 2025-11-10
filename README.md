@@ -1,4 +1,4 @@
-# VERIFACTU104 FOR [DOLIBARR ERP & CRM](https://www.dolibarr.org)
+# VERIFACTU FOR [DOLIBARR ERP & CRM](https://www.dolibarr.org) (Gratuito)
 # 🇪🇸 Verifactu 104 - Módulo Dolibarr ERP/CRM (AEAT - Plan Antifraude)
 
 ## 🌟 Descripción General
