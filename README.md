@@ -1,4 +1,4 @@
-# VERIFACTU PARA S.L (Gratuito)
+# Módulo Dolibarr VERIFACTU PARA S.L (Gratuito)
 # 🇪🇸 Verifactu 104 - Módulo Dolibarr ERP/CRM (AEAT - Plan Antifraude modalidad Sociedad Limitada)
 
 ## 🌟 Descripción General
