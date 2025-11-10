@@ -42,10 +42,10 @@ NO es una instalación estándar de dolibarr. Requiere algo de conocimiento téc
   ALTER TABLE TU_PREFIJO_facture
   ADD COLUMN ash_verifactu VARCHAR(255) NULL,
   ADD COLUMN ash_prev VARCHAR(255) NULL;
-  Ejemplo con `refijop de tablas 'lix'
-  ALTER TABLE lix_facture
-  ADD COLUMN ash_verifactu VARCHAR(255) NULL,
-  ADD COLUMN ash_prev VARCHAR(255) NULL;
+	  *Ejemplo con `refijop de tablas 'lix'
+	  ALTER TABLE lix_facture
+	  ADD COLUMN ash_verifactu VARCHAR(255) NULL,
+	  ADD COLUMN ash_prev VARCHAR(255) NULL;
 
 Cualquier comentario o pregunta no dudees en hacérmelo a través de la página de contacto de 104cubes.com
 
