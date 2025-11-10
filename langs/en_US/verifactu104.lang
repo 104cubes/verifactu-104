@@ -1,0 +1,42 @@
+# Translation file
+
+#
+# Generic
+#
+
+# Module label 'ModuleVerifactu104Name'
+ModuleVerifactu104Name = Verifactu104
+# Module description 'ModuleVerifactu104Desc'
+ModuleVerifactu104Desc = Verifactu104 description
+
+#
+# Admin page
+#
+Verifactu104Setup = Verifactu104 setup
+Settings = Settings
+Verifactu104SetupPage = Verifactu104 setup page
+NewSection=New section
+VERIFACTU104_MYPARAM1 = My param 1
+VERIFACTU104_MYPARAM1Tooltip = My param 1 tooltip
+VERIFACTU104_MYPARAM2=My param 2
+VERIFACTU104_MYPARAM2Tooltip=My param 2 tooltip
+
+
+#
+# About page
+#
+About = About
+Verifactu104About = About Verifactu104
+Verifactu104AboutPage = Verifactu104 about page
+
+#
+# Sample page
+#
+Verifactu104Area = Home Verifactu104
+MyPageName = My page name
+
+#
+# Sample widget
+#
+MyWidget = My widget
+MyWidgetDescription = My widget description
