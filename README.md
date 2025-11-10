@@ -30,7 +30,7 @@ Para la correcta ejecución del módulo Verifactu 104, se requieren las siguient
 
 ## 🚀 Instalación y Configuración
 
-**⚠️ Advertencia Importante:** Esta NO es una instalación estándar de Dolibarr. Requiere conocimientos técnicos y acceso al servidor (sistema de archivos) y a la base de datos (BDD).
+**⚠️ Advertencia Importante:** Esta NO es una instalación estándar de Dolibarr. Requiere ciertos conocimientos, acceso al servidor (sistema de archivos) y a la base de datos (BDD).
 
 ### Paso 1: Descarga y Carga del Módulo
 
