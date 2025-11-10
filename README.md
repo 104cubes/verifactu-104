@@ -18,7 +18,7 @@
 
 | Componente | Versión |
 |-----------|---------|
-| Dolibarr ERP/CRM | **16.0 a 22.x** (recomendado 20 a 22) |
+| Dolibarr ERP/CRM | **16.0 a 22.x** (Probado en versiones 20 y 22) |
 | PHP | 7.4+ |
 | Extensiones PHP | `openssl`, `gd` |
 | Sistema | Linux recomendado (pero funciona en Windows también) |
