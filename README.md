@@ -54,3 +54,4 @@ ADD COLUMN hash_prev VARCHAR(255) NULL;
 ```
 
 Si no te funciona o tienes cualquier duda puedes hacer tus comentarios en este post de Linkedin.
+https://www.linkedin.com/posts/104-cubes_m%C3%B3dulo-dolibarr-verifactu-para-sl-gratuito-activity-7393888340925812736-9Kjr?utm_source=share&utm_medium=member_desktop&rcm=ACoAADOwCK8B0BKkRIDkcAvAVmsn7Ctv1Du2r5c
