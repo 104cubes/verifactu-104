@@ -51,5 +51,5 @@ Es necesario añadir dos nuevas columnas a la tabla de facturas (`TU_PREFIJO_fac
 ALTER TABLE TU_PREFIJO_facture
 ADD COLUMN hash_verifactu VARCHAR(255) NULL,
 ADD COLUMN hash_prev VARCHAR(255) NULL;
-
+...
 Si no te funciona o tienes cualquier duda puedes hacer tus comentarios en este post de Linkedin.
