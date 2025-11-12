@@ -77,8 +77,11 @@ class ActionsVerifactu104 extends CommonHookActions
             $newpdf->Image($qr_file, 80, $newpdf->GetY(), 50, 50, 'PNG');
             $newpdf->Ln(60);
 
+           
             // Hash
-            $sql = "SELECT hash_verifactu FROM " . MAIN_DB_PREFIX . "facture WHERE rowid = " . (int)$object->id;
+            $sql = "SELECT hash_verifactu 
+                    FROM " . MAIN_DB_PREFIX . "facture_extrafields 
+                    WHERE fk_object = " . (int)$object->id;
             $resql = $this->db->query($sql);
             $hash_val = ($resql && $obj = $this->db->fetch_object($resql)) ? $obj->hash_verifactu : '';
 
