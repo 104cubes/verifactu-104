@@ -30,27 +30,17 @@ Para la correcta ejecución del módulo Verifactu 104, se requieren las siguient
 
 ## 🚀 Instalación y Configuración
 
-**⚠️ Advertencia Importante:** Esta NO es una instalación estándar de Dolibarr. Requiere ciertos conocimientos, acceso al servidor (sistema de archivos) y a la base de datos (BDD).
+**⚠️ Advertencia Importante:** Esta NO es una instalación estándar de Dolibarr. Requiere ciertos conocimientos, acceso al servidor (sistema de archivos).
 
-### Paso 1: Descarga y Carga del Módulo
 
 1.  Descarga el archivo ZIP del módulo desde GitHub.
 2.  Descomprime el ZIP.
 3.  Sube la carpeta descomprimida (el módulo) a la carpeta `/custom` de tu instalación de Dolibarr en el servidor.
     * *Alternativa:* Sube el archivo ZIP directamente a la carpeta `/custom` y descomprímelo allí.
+  
+4.  Ve a Inicio -> Configuración -> Módulos y aparecerá el módulo listopara activar
+5.  Actívalo
 
-### Paso 2: Modificación de la Base de Datos
-
-Es necesario añadir dos nuevas columnas a la tabla de facturas (`TU_PREFIJO_facture`) para almacenar los *hashes* de Verifactu.
-
-> **Localiza tu prefijo de tabla:** Reemplaza `TU_PREFIJO` por el prefijo real de tus tablas de Dolibarr (por ejemplo, `lix_`).
-
-**Sentencia SQL a ejecutar:**
-
-```sql
-ALTER TABLE TU_PREFIJO_facture
-ADD COLUMN hash_verifactu VARCHAR(255) NULL,
-ADD COLUMN hash_prev VARCHAR(255) NULL;
 ```
 
 Si no te funciona o tienes cualquier duda puedes hacer tus comentarios en este post de Linkedin.
