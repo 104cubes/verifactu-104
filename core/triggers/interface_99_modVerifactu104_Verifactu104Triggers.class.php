@@ -22,10 +22,11 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 dol_syslog("VERIFACTU: Generando hash para factura " . $object->ref . " (id=" . $object->id . ")");
 
                 // 1) Recuperar hash previo (última factura validada con hash)
-                $sqlprev = "SELECT hash_verifactu
-            FROM " . MAIN_DB_PREFIX . "facture
-            WHERE hash_verifactu IS NOT NULL
-            ORDER BY date_validation DESC, rowid DESC
+               $sqlprev = "SELECT t.hash_verifactu
+            FROM " . MAIN_DB_PREFIX . "facture_extrafields as t
+            INNER JOIN " . MAIN_DB_PREFIX . "facture as f ON f.rowid = t.fk_object
+            WHERE t.hash_verifactu IS NOT NULL
+            ORDER BY f.date_validation DESC, f.rowid DESC
             LIMIT 1";
                 $resprev = $this->db->query($sqlprev);
                 $hash_prev = "";
@@ -45,9 +46,11 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 $hash_new = base64_encode(hash("sha256", $cadena, true));
 
                 // 4) Guardar hash
-                $sqlupdate = "UPDATE " . MAIN_DB_PREFIX . "facture
-              SET hash_verifactu = '" . $this->db->escape($hash_new) . "'
-              WHERE rowid = " . ((int)$object->id);
+                // Usamos INSERT... ON DUPLICATE KEY UPDATE para crear o actualizar la fila en la tabla de extrafields
+                // 'fk_object' es la clave que vincula con la factura
+                $sqlupdate = "INSERT INTO " . MAIN_DB_PREFIX . "facture_extrafields (fk_object, hash_verifactu)
+              VALUES (" . (int)$object->id . ", '" . $this->db->escape($hash_new) . "')
+              ON DUPLICATE KEY UPDATE hash_verifactu = '" . $this->db->escape($hash_new) . "'";
                 $resupdate = $this->db->query($sqlupdate);
 
                 if (!$resupdate) {
