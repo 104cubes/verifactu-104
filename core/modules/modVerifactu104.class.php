@@ -450,26 +450,58 @@ class modVerifactu104 extends DolibarrModules
 
 		// Add hash_verifactu column to llx_facture if it does not exist
 		// Add missing columns to llx_facture if they do not exist
-		$columns = array(
-			"hash_verifactu VARCHAR(255) NULL",
-			"hash_prev VARCHAR(255) NULL"
+		// Create extrafields during init
+		include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+		$extrafields = new ExtraFields($this->db);
+		
+		$langfile = 'verifactu104@verifactu104'; // Tu fichero de idioma
+		$condition = 'isModEnabled("verifactu104")'; // Condición para mostrar
+
+		// 1. Añadir campo para el hash de esta factura
+		// Parámetros clave: 'hash_verifactu' (nombre), 'Verifactu Hash' (etiqueta), 'varchar' (tipo), 'invoice' (elemento)
+		// El '0' en el quinto parámetro (visible) lo oculta de la interfaz de usuario, ya que es un campo técnico.
+		$extrafields->addExtraField(
+			'hash_verifactu', 
+			"Verifactu Hash", 
+			'varchar', 
+			1, 
+			255, 
+			'facture', 
+			0, 
+			0, 
+			'', 
+			'', 
+			1, 
+			'', 
+			0, // Posición (0 = invisible)
+			0, 
+			'', 
+			'', 
+			$langfile, 
+			$condition
 		);
 
-		foreach ($columns as $coldef) {
-			$colname = explode(' ', $coldef)[0];
-			$check = "SHOW COLUMNS FROM " . MAIN_DB_PREFIX . "facture LIKE '" . $colname . "';";
-			$rescheck = $this->db->query($check);
-
-			if ($rescheck && $this->db->num_rows($rescheck) == 0) {
-				$sql_alter = "ALTER TABLE " . MAIN_DB_PREFIX . "facture ADD COLUMN " . $coldef . ";";
-				$resql_alter = $this->db->query($sql_alter);
-				dol_syslog("VERIFACTU104: Creating column " . $colname . " result=" . ($resql_alter ? "OK" : $this->db->lasterror()), LOG_INFO);
-			}
-		}
-		if (!$resql_alter) {
-			dol_syslog("VERIFACTU104: Error creating column hash_verifactu: " . $this->db->lasterror(), LOG_ERR);
-		}
-
+		// 2. Añadir campo para el hash previo (si lo necesitas guardar también)
+		$extrafields->addExtraField(
+			'hash_prev', 
+			"Verifactu Hash Anterior", 
+			'varchar', 
+			1, 
+			255, 
+			'facture', 
+			0, 
+			0, 
+			'', 
+			'', 
+			1, 
+			'', 
+			0, // Posición (0 = invisible)
+			0, 
+			'', 
+			'', 
+			$langfile, 
+			$condition
+		);
 		// Create tables of module at module activation
 		//$result = $this->_load_tables('/install/mysql/', 'verifactu104');
 		$result = $this->_load_tables('/verifactu104/sql/');
