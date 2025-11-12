@@ -14,6 +14,8 @@ Este módulo garantiza que tus facturas cumplan con los requisitos de trazabilid
     * Hash de trazabilidad (`hash_verifactu` y `hash_prev`).
     * Identificación de emisor y receptor.
     * Total de la factura.
+ 
+* **Genera el XML según la normativa** y lo guarda en la carpeta de documentos de la factura junto al qr y el pdf
 * **Compatibilidad Total:** **No modifica las plantillas PDF** de Dolibarr, siendo compatible con cualquier modelo (estándar o personalizado).
 * **Ejecución Local:** No depende de servicios externos. Todo el proceso de cálculo y generación se realiza localmente en tu servidor.
 
