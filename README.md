@@ -38,7 +38,7 @@ Para la correcta ejecución del módulo Verifactu 104, se requieren las siguient
 3.  Sube la carpeta descomprimida (el módulo) a la carpeta `/custom` de tu instalación de Dolibarr en el servidor.
     * *Alternativa:* Sube el archivo ZIP directamente a la carpeta `/custom` y descomprímelo allí.
   
-4.  ** Renombra la carpeta a verifactu104 ** 
+4.  **Renombra** la carpeta a **verifactu104** 
   
 5.  Ve a Inicio -> Configuración -> Módulos y aparecerá el módulo listopara activar
 6.  Actívalo
