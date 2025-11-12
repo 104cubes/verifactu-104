@@ -110,6 +110,52 @@ class ActionsVerifactu104 extends CommonHookActions
             dol_syslog("VERIFACTU_HOOK: ERROR FPDI → " . $e->getMessage(), LOG_ERR);
             return -1;
         }
+// === GENERAR XML VERIFACTU ===
+$xml_path = $conf->facture->dir_output . "/" . $ref . "/verifactu_" . $ref . ".xml";
+
+$dom = new DOMDocument('1.0', 'UTF-8');
+$dom->formatOutput = true;
+$root = $dom->createElementNS('https://www.agenciatributaria.gob.es/verifactu/v1', 'RegistroFacturacionAlta');
+$dom->appendChild($root);
+
+// --- Emisor ---
+$emisor = $dom->createElement('Emisor');
+$emisor->appendChild($dom->createElement('NIF', $object->thirdparty->idprof1));
+$emisor->appendChild($dom->createElement('NombreRazon', $object->thirdparty->name));
+$root->appendChild($emisor);
+
+// --- Receptor ---
+$receptor = $dom->createElement('Receptor');
+$receptor->appendChild($dom->createElement('NIF', $object->thirdparty->idprof1));
+$receptor->appendChild($dom->createElement('NombreRazon', $object->thirdparty->name));
+$root->appendChild($receptor);
+
+// --- Factura ---
+$factura = $dom->createElement('Factura');
+$factura->appendChild($dom->createElement('NumeroFactura', $object->ref));
+$factura->appendChild($dom->createElement('SerieFactura', $object->ref_client));
+$factura->appendChild($dom->createElement('FechaExpedicion', substr($object->date, 0, 10)));
+$factura->appendChild($dom->createElement('FechaOperacion', substr($object->date, 0, 10)));
+$factura->appendChild($dom->createElement('TipoFactura', 'F1'));
+$factura->appendChild($dom->createElement('DescripcionOperacion', $object->note_public));
+$factura->appendChild($dom->createElement('BaseImponible', number_format($object->total_ht, 2, '.', '')));
+$factura->appendChild($dom->createElement('TipoIVA', '21.00'));
+$factura->appendChild($dom->createElement('CuotaIVA', number_format($object->total_tva, 2, '.', '')));
+$factura->appendChild($dom->createElement('ImporteTotal', number_format($object->total_ttc, 2, '.', '')));
+$root->appendChild($factura);
+
+// --- Sistema ---
+$sistema = $dom->createElement('Sistema');
+$sistema->appendChild($dom->createElement('CodigoSistema', 'VERIFACTU104'));
+$sistema->appendChild($dom->createElement('Productor', '104 CUBES S.L.'));
+$sistema->appendChild($dom->createElement('HashAnterior', '')); // Recuperar de extra field si existe
+$sistema->appendChild($dom->createElement('HashActual', $hash_val));
+$sistema->appendChild($dom->createElement('FechaHoraGeneracion', date('c')));
+$root->appendChild($sistema);
+
+// Guardar XML
+$dom->save($xml_path);
+dol_syslog("VERIFACTU_HOOK: XML VeriFactu generado en $xml_path", LOG_DEBUG);
 
         return 0;
     }
