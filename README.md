@@ -45,7 +45,7 @@ Para la correcta ejecución del módulo Verifactu 104, se requieren las siguient
   (Probablemente se al descomprimir se llame verifactu-104-main)
 4.  **Renombra** la carpeta a **verifactu104** 
   
-5.  Ve a Inicio -> Configuración -> Módulos y aparecerá el módulo listopara activar
+5.  Ve a Inicio -> Configuración -> Módulos y aparecerá el módulo listo para activar
 6.  Actívalo
 
 
