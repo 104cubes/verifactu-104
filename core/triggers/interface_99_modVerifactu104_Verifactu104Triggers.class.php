@@ -22,7 +22,7 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 dol_syslog("VERIFACTU: Generando hash para factura " . $object->ref . " (id=" . $object->id . ")");
 
                 // 1) Recuperar hash previo (última factura validada con hash)
-               $sqlprev = "SELECT t.hash_verifactu
+                $sqlprev = "SELECT t.hash_verifactu
             FROM " . MAIN_DB_PREFIX . "facture_extrafields as t
             INNER JOIN " . MAIN_DB_PREFIX . "facture as f ON f.rowid = t.fk_object
             WHERE t.hash_verifactu IS NOT NULL
@@ -36,7 +36,7 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
 
                 // 2) Formato Verifactu (AEAT)
                 // Cadena: NIF + fecha ISO + total con 2 decimales + hash anterior
-                $emisor_nif = $conf->global->MAIN_INFO_TVAINTRA ?: $conf->global->MAIN_INFO_SIREN ?: "";
+                $emisor_nif = $conf->global->MAIN_INFO_SIREN ?: $conf->global->MAIN_INFO_TVAINTRA ?: 'B00000000';
                 $fecha_iso = dol_print_date($object->date_validation, "%Y-%m-%dT%H:%M:%S");
                 $total_fmt = number_format((float)$object->total_ttc, 2, '.', '');
 
@@ -45,17 +45,19 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 // 3) Hash SHA256 binario + Base64 (formato correcto AEAT)
                 $hash_new = base64_encode(hash("sha256", $cadena, true));
 
-                // 4) Guardar hash
-                // Usamos INSERT... ON DUPLICATE KEY UPDATE para crear o actualizar la fila en la tabla de extrafields
-                // 'fk_object' es la clave que vincula con la factura
-                $sqlupdate = "INSERT INTO " . MAIN_DB_PREFIX . "facture_extrafields (fk_object, hash_verifactu)
-              VALUES (" . (int)$object->id . ", '" . $this->db->escape($hash_new) . "')
-              ON DUPLICATE KEY UPDATE hash_verifactu = '" . $this->db->escape($hash_new) . "'";
-                $resupdate = $this->db->query($sqlupdate);
+                // 4) Guardar hash en el extrafield
+                $facture = new Facture($this->db);
+                $facture->fetch($object->id);         // carga completa
+                $facture->fetch_optionals();          // carga extrafields
 
-                if (!$resupdate) {
-                    dol_syslog("VERIFACTU ERROR: No se pudo guardar hash en factura ID " . $object->id . " Error=" . $this->db->lasterror(), LOG_ERR);
-                    return -1;
+                $facture->array_options['options_hash_verifactu'] = $hash_new;
+
+                $res = $facture->updateExtraField('hash_verifactu', $hash_new);
+
+                if ($res <= 0) {
+                    dol_syslog("VERIFACTU ERROR: No se pudo guardar hash_verifactu para factura id=" . $object->id, LOG_ERR);
+                } else {
+                    dol_syslog("VERIFACTU HASH GUARDADO OK (extrafields)", LOG_INFO);
                 }
 
                 dol_syslog("VERIFACTU HASH OK: " . $hash_new, LOG_INFO);
