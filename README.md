@@ -5,7 +5,7 @@
 
 **Verifactu 104** es un módulo diseñado por 104 CUBES S.L para **Dolibarr ERP/CRM** que implementa el **Sistema de Registro Encadenado y Firma de Facturas** conforme al Real Decreto de Veri\*factu (Plan Antifraude de la AEAT - Agencia Tributaria Española).
 
-Este módulo garantiza que tus facturas cumplan con los requisitos de trazabilidad y seguridad exigidos, añadiendo las siguientes funcionalidades clave:
+Este módulo garantiza que tus facturas cumplan con los requisitos de trazabilidad y seguridad exigidos, a través de las siguientes funcionalidades:
 
 * **Cálculo de Hash Encadenado:** Generación del *hash* encadenado en cada factura validada, asegurando la trazabilidad.
 * **Generación de QR Verifactu:** Creación del Código QR según el formato estandarizado por la AEAT.
