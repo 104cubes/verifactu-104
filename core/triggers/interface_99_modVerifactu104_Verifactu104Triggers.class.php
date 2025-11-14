@@ -20,14 +20,16 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
         switch ($action) {
             case 'BILL_VALIDATE':
                 dol_syslog("VERIFACTU: Generando hash para factura " . $object->ref . " (id=" . $object->id . ")");
-
+                $serie = preg_replace('/[^A-Za-z]/', '', (string) $object->ref);
                 // 1) Recuperar hash previo (última factura validada con hash)
                 $sqlprev = "SELECT t.hash_verifactu
-            FROM " . MAIN_DB_PREFIX . "facture_extrafields as t
-            INNER JOIN " . MAIN_DB_PREFIX . "facture as f ON f.rowid = t.fk_object
-            WHERE t.hash_verifactu IS NOT NULL
-            ORDER BY f.date_validation DESC, f.rowid DESC
-            LIMIT 1";
+                FROM " . MAIN_DB_PREFIX . "facture_extrafields as t
+                INNER JOIN " . MAIN_DB_PREFIX . "facture as f ON f.rowid = t.fk_object
+                WHERE t.hash_verifactu IS NOT NULL
+                AND f.fk_statut = 1
+                AND f.ref LIKE '" . $this->db->escape($serie) . "%'
+                ORDER BY f.date_validation DESC, f.rowid DESC
+                LIMIT 1";
                 $resprev = $this->db->query($sqlprev);
                 $hash_prev = "";
                 if ($resprev && $objprev = $this->db->fetch_object($resprev)) {
@@ -61,6 +63,7 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 }
 
                 dol_syslog("VERIFACTU HASH OK: " . $hash_new, LOG_INFO);
+                $object->add_action('SIF_HASH', 'Hash generado: ' . $hash_new, $user->id);
                 // 5) Generar QR y guardarlo en el directorio de documentos de la factura
                 require_once dirname(__FILE__) . '/../../lib/phpqrcode.php';
 
