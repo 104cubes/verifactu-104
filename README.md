@@ -4,7 +4,7 @@
 ## ⚠️ Aviso importante
 **Este módulo NO es un SIF-VeriFactu.**  
 **No realiza el envío automático a la AEAT.**  
-Su propósito es **cumplir con el RSIF**, que es la parte obligatoria de la nueva normativa antifraude, el envío inmediato a la AEAT, sin embargo el módulol está preparado para crear el método que lo haga.
+Su propósito es cumplir con el RSIF, **que es la parte obligatoria** de la nueva normativa antifraude, el envío inmediato a la AEAT, sin embargo el módulol está preparado para crear el método que lo haga.
 
 ---
 
