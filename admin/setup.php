@@ -111,8 +111,13 @@ $auto_send = getDolGlobalInt('VERIFACTU_AUTO_SEND');
 
 // -------------------- VIEW --------------------
 llxHeader('', 'Configuración VeriFactu 104', '', '', 0, 0, '', '', 0, 0, 'none');
-
 print load_fiche_titre('Configuración VeriFactu 104', '', 'fa-file');
+print '<div class="info" style="background:#fff3cd;border:1px solid #ffeeba;padding:12px;margin-bottom:20px;">
+<b>Aviso importante:</b><br>
+Este módulo genera todos los elementos obligatorios del RSIF (hash, XML, QR y trazabilidad), pero <b>no incluye el método de envío automático a Hacienda</b>.<br><br>
+Si activas la opción de “Envío automático”, debes haber implementado previamente tu propio método de envío VeriFactu, y siempre probar primero en el entorno de <b>pruebas</b>.<br><br>
+No actives el modo “Producción” sin haber desarrollado y validado ese método. De lo contrario, aparecerán errores al intentar enviar las facturas.
+</div>';
 
 // Inicio formulario
 print '<form method="POST" enctype="multipart/form-data">';
