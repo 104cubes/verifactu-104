@@ -81,6 +81,7 @@ Sin embargo:
 - La cadena de hashes cumple con la especificación RSIF y, por tanto, es **compatible con VeriFactu**.  
 - El usuario puede activar o añadir en cualquier momento un método de envío conforme a VeriFactu.  
 - El módulo incorpora puntos de integración pensados específicamente para esas ampliaciones.
+- Implementar el módulo te obliga a comprobar que cunmple todos los requiesits antes de usarlo en producción.
 
 Si deseas añadir el **envío automático** conforme al sistema VeriFactu,  
 **podemos ayudarte a completar este módulo con dicha funcionalidad**.  
