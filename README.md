@@ -1,54 +1,132 @@
-# Módulo Dolibarr VERIFACTU PARA S.L (Gratuito)
-# 🇪🇸 Verifactu 104 - Módulo Dolibarr ERP/CRM (AEAT - Plan Antifraude modalidad Sociedad Limitada)
+# Módulo Dolibarr — Verifactu 104 (RSIF para S.L.)
+### Cumplimiento del Reglamento RSIF — Compatible con VeriFactu (opcional)
 
-## 🌟 Descripción General
-## ESTE REPSITORIO NO ES UN SIF, NO TIENE FUNCIONALIDADES PARA EL ENVÍO AUTOMATIZADO ## 
-**Verifactu 104** es un módulo diseñado por 104 CUBES S.L para **Dolibarr ERP/CRM** que implementa el **Sistema de Registro Encadenado y Firma de Facturas** conforme al Real Decreto de Veri\*factu (Plan Antifraude de la AEAT - Agencia Tributaria Española).
+## ⚠️ Aviso importante
+**Este módulo NO es un SIF-VeriFactu.**  
+**No realiza el envío automático a la AEAT ni pretende serlo.**  
+Su propósito es **cumplir con el RSIF**, que es la parte obligatoria de la nueva normativa antifraude, el envío inmediato a la AEAT que es lo que es Verifactu es opcional para las empresas.
 
-**Este módulo garantiza que tus facturas cumplan con los requisitos de trazabilidad y seguridad exigidos, a través de las siguientes** 
-## 📋funcionalidades:
+---
 
-* **Cálculo de Hash Encadenado:** Generación del *hash* encadenado en cada factura validada, asegurando la trazabilidad.
-* **Generación de QR Verifactu:** Creación del Código QR según el formato estandarizado por la AEAT.
-* **Página Adicional en el PDF:** Añade una página de información al PDF de la factura con:
-    * Código QR verificable.
-    * Hash de trazabilidad (`hash_verifactu` y `hash_prev`).
-    * Identificación de emisor y receptor.
-    * Total de la factura.
- 
-* **Genera el XML según la normativa** y lo guarda en la carpeta de documentos de la factura junto al qr y el pdf
+# 📌 Descripción general
 
-## 📋 Sin dependencias externas  
-* **Compatibilidad Total dolibarr:** **No modifica las plantillas PDF** de Dolibarr, siendo compatible con cualquier modelo (estándar o personalizado).
-* **Ejecución Local:** No depende de servicios externos. Todo el proceso de cálculo y generación se realiza localmente en tu servidor.
+**Verifactu 104** es un módulo desarrollado por **104 CUBES S.L.** para **Dolibarr ERP/CRM**, que implementa íntegramente los requisitos técnicos del **RSIF (Reglamento de los Sistemas Informáticos de Facturación)** derivados del Real Decreto 1007/2023.
 
-## 📋 Requisitos del Sistema
+Este módulo garantiza la **integridad, trazabilidad e inalterabilidad** de cada factura, mediante:
 
-Para la correcta ejecución del módulo Verifactu 104, se requieren las siguientes versiones y componentes:
+- Hash encadenado  
+- Código QR regulado  
+- XML conforme al esquema RSIF (AEAT)  
+- Registro de acciones  
+- Bloqueo y control de modificaciones  
+- Página certificada adicional en el PDF  
+- Conservación de toda la evidencia digital en el directorio de cada factura  
 
-| Componente | Versión | Notas |
-| :--- | :--- | :--- |
-| **Dolibarr ERP/CRM** | 16.0 a 22.x | Probado en versiones 20 y 22. |
-| **PHP** | 7.4+ | Versión mínima recomendada. |
-| **Extensiones PHP** | `openssl`, `gd` | Obligatorias para el cálculo de hash y la generación del QR. |
-| **Sistema Operativo** | Linux (Recomendado) | Funciona también en entornos Windows. En cualquier caso debe ser un entorno Apache php sql|
+Con esto, cualquier instalación de Dolibarr equipada con este módulo **cumple la normativa obligatoria RSIF**, independientemente de que el usuario desee activar o no la modalidad **VeriFactu (envío inmediato a la AEAT)**.
 
-## 🚀 Instalación y Configuración
+---
 
-**⚠️ Advertencia Importante:** Esta NO es una instalación estándar de Dolibarr. Requiere ciertos conocimientos, acceso al servidor (sistema de archivos).
+# 📋 Funcionalidades incluidas
 
+### ✔ 1. Hash encadenado automático
+Cada factura validada genera un hash SHA256 encadenado con la factura anterior, asegurando la trazabilidad cronológica requerida por RSIF.
 
-1.  Descarga el archivo ZIP del módulo desde GitHub.
-2.  Descomprime el ZIP.
-3.  Sube la carpeta descomprimida (el módulo) a la carpeta `/custom` de tu instalación de Dolibarr en el servidor.
-    * *Alternativa:* Sube el archivo ZIP directamente a la carpeta `/custom` y descomprímelo allí.
-  (Probablemente se al descomprimir se llame verifactu-104-main)
-4.  **Renombra** la carpeta a **verifactu104** 
-  
-5.  Ve a Inicio -> Configuración -> Módulos y aparecerá el módulo listo para activar
-6.  Actívalo
+### ✔ 2. Generación de Código QR oficial
+El módulo genera el QR con la estructura establecida por la AEAT y lo guarda junto a la factura.
 
+### ✔ 3. Página certificada en el PDF
+Sin modificar ninguna plantilla PDF de Dolibarr, añade automáticamente una página final con:
 
+- QR de la factura  
+- Hash actual  
+- Identificación del emisor  
+- Resumen esencial de la factura  
+- Evidencia de integridad criptográfica  
 
-Dime si te ha funcionado o si tienes cualquier duda puedes hacer tus comentarios en este post de Linkedin.
-https://www.linkedin.com/posts/104-cubes_m%C3%B3dulo-dolibarr-verifactu-para-sl-gratuito-activity-7393888340925812736-9Kjr?utm_source=share&utm_medium=member_desktop&rcm=ACoAADOwCK8B0BKkRIDkcAvAVmsn7Ctv1Du2r5c
+Compatible con cualquier modelo PDF, incluso personalizados.
+
+### ✔ 4. Generación del XML RSIF completo
+Cada factura genera un XML conforme al esquema oficial (`SuministroLR.xsd`).  
+Se guarda en el directorio de documentos de la factura junto al PDF y el QR.
+
+Este XML es **válido para sistemas VeriFactu** si el usuario desea implementar posteriormente una comunicación con la AEAT.
+
+### ✔ 5. Registro de acciones RSIF
+El módulo documenta eventos internos asociados a:
+
+- Validación  
+- Cálculo de hash  
+- Generación de QR  
+- Generación de XML  
+- Cualquier operación crítica RSIF  
+
+### ✔ 6. Control de integridad y bloqueo
+Una vez generada la evidencia RSIF:
+
+- No se permite volver la factura a borrador si ya ha sido enviada (cuando se conecte con AEAT opcionalmente).  
+- No se permite modificar una factura fuera del orden cronológico.
+
+Esto evita romper la cadena de trazabilidad.
+
+---
+
+# 🔌 Opcional: Envío a la AEAT (VeriFactu)
+
+Este módulo incluye un panel de configuración donde el usuario puede activar o desactivar la funcionalidad relacionada con el modo VeriFactu. Sin embargo, la parte correspondiente al envío automático a la AEAT no se publica en este repositorio, ese método tendrías que crearlo túi y hacerte rsponsable de ese desarrollo. Esto se debe a que el envío inmediato a la Agencia Tributaria convierte al software en un “SIF-VeriFactu”, sometido a un régimen sancionador específico y de esta manera garantizamos un módulo seguro y plenamente legal para cualquier instalación de Dolibarr.
+Su objetivo principal es cumplir el **RSIF**, que es la parte obligatoria de la normativa.
+
+Sin embargo:
+
+- El XML generado **es válido** para ser enviado a la AEAT.  
+- La cadena de hashes cumple con la especificación RSIF y, por tanto, es **compatible con VeriFactu**.  
+- El usuario puede activar o añadir en cualquier momento un método de envío conforme a VeriFactu.  
+- El módulo incorpora puntos de integración pensados específicamente para esas ampliaciones.
+
+Si deseas añadir el **envío automático** conforme al sistema VeriFactu,  
+**podemos ayudarte a completar este módulo con dicha funcionalidad**.  
+La base RSIF ya está implementada y preparada para conectarse con los servicios de la AEAT cuando se necesite.
+
+---
+
+# 📘 Cumplimiento legal
+
+Este módulo permite al usuario cumplir:
+
+### ✔ La obligación RSIF (obligatoria para todas las empresas)
+- Registro encadenado  
+- XML RSIF  
+- Hash y QR  
+- Inalterabilidad  
+- Evidencia y trazabilidad  
+
+### ❗ Sin convertirse en un SIF-VeriFactu
+El sistema VeriFactu (envío inmediato a AEAT) es **voluntario**, no obligatorio.  
+Este módulo deja esa opción en manos del usuario, pero no la activa.
+
+---
+
+# 🔧 Requisitos del sistema
+
+| Componente | Versión | Comentario |
+|-----------|---------|------------|
+| Dolibarr ERP/CRM | 16.0 – 22.x | Probado en 20 y 22 |
+| PHP | 7.4+ | Recomendado 7.4 o superior |
+| Extensiones PHP | `openssl`, `gd` | Para hash y QR |
+| Servidor | Linux recomendado | Compatible con Apache/PHP/SQL |
+
+---
+
+# 🚀 Instalación
+
+1. Descargar el ZIP del módulo desde GitHub.  
+2. Descomprimir y subir la carpeta a `/custom/`.  
+3. Renombrar la carpeta a: `verifactu104`  
+4. Activar el módulo desde:  
+   Inicio → Configuración → Módulos/Aplicaciones  
+
+---
+
+# 📣 Comentarios y soporte
+
+Puedes dejar tus dudas o comentarios en este post:  
+https://www.linkedin.com/posts/104-cubes_m%C3%B3dulo-dolibarr-verifactu-para-sl-gratuito-activity-7393888340925812736-9Kjr
