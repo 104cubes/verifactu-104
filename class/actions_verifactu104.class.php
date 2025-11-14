@@ -77,7 +77,7 @@ class ActionsVerifactu104 extends CommonHookActions
             $newpdf->Image($qr_file, 80, $newpdf->GetY(), 50, 50, 'PNG');
             $newpdf->Ln(60);
 
-           
+
             // Hash
             $sql = "SELECT hash_verifactu 
                     FROM " . MAIN_DB_PREFIX . "facture_extrafields 
@@ -110,7 +110,7 @@ class ActionsVerifactu104 extends CommonHookActions
             dol_syslog("VERIFACTU_HOOK: ERROR FPDI → " . $e->getMessage(), LOG_ERR);
             return -1;
         }
-// === GENERAR XML VERIFACTU (SOAP completo según WSDL AEAT) ===
+        // === GENERAR XML VERIFACTU (SOAP completo según WSDL AEAT) ===
         $xml_path = $conf->facture->dir_output . "/" . $ref . "/verifactu_" . $ref . ".xml";
 
         $dom = new DOMDocument('1.0', 'UTF-8');
@@ -250,7 +250,15 @@ class ActionsVerifactu104 extends CommonHookActions
 
         // Guardar SOAP completo
         $dom->save($xml_path);
-dol_syslog("VERIFACTU_HOOK: XML VeriFactu generado en $xml_path", LOG_DEBUG);
+        $object->add_action('SIF_XML', 'XML VeriFactu generado: ' . basename($xml_path), $GLOBALS['user']->id);
+        dol_syslog("VERIFACTU_HOOK: XML VeriFactu SOAP completo generado en $xml_path", LOG_DEBUG);
+        
+        /* Envío automático a AEAT si está habilitado
+        
+        if (!empty($conf->global->VERIFACTU_AUTO_SEND) && in_array($conf->global->VERIFACTU_MODE, ['test', 'prod'])) {
+       
+            $this->sendToAEAT($xml_path, $object);
+        } */
 
         return 0;
     }
