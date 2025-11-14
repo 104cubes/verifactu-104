@@ -126,17 +126,6 @@ Este módulo deja esa opción en manos del usuario, pero no la activa.
 
 ---
 
----
-
-# ✔ Validación manual de tus XML con la AEAT
-
-Este módulo genera los ficheros XML conforme al esquema RSIF utilizado por la AEAT.  
-Si deseas comprobar por tu cuenta que los XML y los hashes cumplen la normativa, puedes validarlos directamente en el entorno oficial de pruebas de Hacienda.
-
-Para ello necesitas:
-
----
-
 # ✔ Validación manual de XML desde el portal oficial de la AEAT
 
 Si deseas comprobar por tu cuenta que los XML generados por el módulo cumplen con el estándar RSIF, la AEAT dispone de un portal web de pruebas donde puedes **subir el XML manualmente** y obtener una validación inmediata.
@@ -153,7 +142,7 @@ Para acceder, necesitarás:
 
 Entra en "Cliente de servicio web".
 
-Una vez dentro del portal, podrás:
+Una vez dentro, podrás:
 
 1. Seleccionar el XML generado por el módulo para cualquier factura.
 2. Elegir el endpoint: /wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP
