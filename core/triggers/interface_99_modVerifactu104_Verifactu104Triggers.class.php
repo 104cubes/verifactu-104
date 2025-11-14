@@ -20,7 +20,6 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
         switch ($action) {
             case 'BILL_VALIDATE':
                 dol_syslog("VERIFACTU: Generando hash para factura " . $object->ref . " (id=" . $object->id . ")");
-                // Se añade tener en cuenta la serie de la factura.
                 $serie = preg_replace('/[^A-Za-z]/', '', (string) $object->ref);
                 // 1) Recuperar hash previo (última factura validada con hash)
                 $sqlprev = "SELECT t.hash_verifactu
@@ -96,9 +95,47 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 QRcode::png($qr_content, $qr_file, QR_ECLEVEL_L, 4);
                 dol_syslog("VERIFACTU QR generado en " . $qr_file);
                 return 1;
+
+            case 'BILL_UNVALIDATE':
+                // Cargar extrafields
+                $object->fetch_optionals();
+
+                // Estado SIF: si está enviada → bloqueo total
+                $estado_sif = $object->array_options['options_verifactu_estado'] ?? '';
+
+                if ($estado_sif === 'enviado') {
+                    dol_syslog("VERIFACTU: No se puede pasar a borrador una factura ENVIADA: " . $object->ref, LOG_WARNING);
+                    setEventMessages("No se puede pasar a borrador una factura enviada a la AEAT.", null, 'errors');
+                    return -1;
+                }
+
+                // Si NO está enviada → solo permitir UNVALIDATE de la última factura de la serie
+                $serie = preg_replace('/[^A-Za-z]/', '', (string) $object->ref);
+
+                $sql_last = "SELECT f.rowid
+                FROM " . MAIN_DB_PREFIX . "facture as f
+                WHERE f.fk_statut = 1
+                AND f.ref LIKE '" . $this->db->escape($serie) . "%'
+                ORDER BY f.date_validation DESC, f.rowid DESC
+                LIMIT 1";
+
+                $res_last = $this->db->query($sql_last);
+                $last_id = 0;
+                if ($res_last && $obj_last = $this->db->fetch_object($res_last)) {
+                    $last_id = (int) $obj_last->rowid;
+                }
+
+                // Si NO es la última → bloqueo
+                if ($object->id != $last_id) {
+                    dol_syslog("VERIFACTU: UNVALIDATE BLOQUEADO. No es la última factura de la serie: " . $object->ref, LOG_WARNING);
+                    setEventMessages("Solo puede desvalidarse la última factura validada de la serie.", null, 'errors');
+                    return -1;
+                }
+
+                // Si llega aquí → se puede pasar a borrador
+                return 0;
             default:
                 return 0;
         }
     }
 }
-
