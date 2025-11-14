@@ -6,7 +6,7 @@
 **VERIFACTU NO ES OBLIGATORIO. LO OBLIGATORIO ES EL RSIF**
 **Este módulo no realiza el envío automático a la AEAT. Que no es parte obligatoria del nuevo reglamento**  
 **Por lo tanto NO es un SIF-VeriFactu.** 
-Su propósito es cumplir con el RSIF (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato a la AEAT, sin embargo el módulol está preparado para crear el método que lo haga. Te ayudamos.
+Su propósito es cumplir con el RSIF (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato a la AEAT, sin embargo el módulo está preparado para crear el método que lo haga. Te ayudamos.
 
 ---
 
