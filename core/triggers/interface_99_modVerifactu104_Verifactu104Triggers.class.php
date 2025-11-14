@@ -63,7 +63,7 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 }
 
                 dol_syslog("VERIFACTU HASH OK: " . $hash_new, LOG_INFO);
-                $object->actionPerformance('SIF_HASH', 'Hash generado: ' . $hash_new);
+                $object->add_action('SIF_HASH', 'Hash generado: ' . $hash_new, $user->id);
                 // 5) Generar QR y guardarlo en el directorio de documentos de la factura
                 require_once dirname(__FILE__) . '/../../lib/phpqrcode.php';
 
@@ -139,5 +139,3 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
         }
     }
 }
-
-
