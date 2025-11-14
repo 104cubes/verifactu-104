@@ -3,15 +3,16 @@
 
 ## ⚠️ Aviso importante
  
-**No realiza el envío automático a la AEAT. Que no es parte obligatoria del nuevo reglamento**  
+**VERIFACTU NO ES OBLIGATORIO. LO OBLIGATORIO ES EL RSIF**
+**Este módulo no realiza el envío automático a la AEAT. Que no es parte obligatoria del nuevo reglamento**  
 **Por lo tanto NO es un SIF-VeriFactu.** 
-Su propósito es cumplir con el RSIF, **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato a la AEAT, sin embargo el módulol está preparado para crear el método que lo haga. Te ayudamos.
+Su propósito es cumplir con el RSIF (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato a la AEAT, sin embargo el módulol está preparado para crear el método que lo haga. Te ayudamos.
 
 ---
 
 # 📌 Descripción general
 
-**Verifactu 104** es un módulo desarrollado por **104 CUBES S.L.** para **Dolibarr ERP/CRM**, que implementa íntegramente los requisitos técnicos del **RSIF (Reglamento de los Sistemas Informáticos de Facturación)** derivados del Real Decreto 1007/2023.
+**Verifactu 104** es un módulo desarrollado por **104 CUBES S.L.** para **Dolibarr ERP/CRM**, que implementa íntegramente los requisitos técnicos del **RSIF** derivados del Real Decreto 1007/2023.
 
 Este módulo garantiza la **integridad, trazabilidad e inalterabilidad** de cada factura, mediante:
 
@@ -65,7 +66,7 @@ El módulo documenta eventos internos asociados a:
 Una vez generada la evidencia RSIF:
 
 - No se permite volver la factura a borrador si ya ha sido enviada (cuando se conecte con AEAT opcionalmente).  
-- No se permite modificar una factura fuera del orden cronológico.
+- No se permite modificar una factura fuera del orden cronológico. Es decir, sólo la última factura se puede modificar (Dolibarr nativo permite modificaciones).
 
 Esto evita romper la cadena de trazabilidad.
 
@@ -74,7 +75,7 @@ Esto evita romper la cadena de trazabilidad.
 # 🔌 ¿Envío a la AEAT? (VeriFactu)
 
 NO está en este código.
-Este módulo incluye un panel de configuración donde el usuario puede activar o desactivar la funcionalidad relacionada con el modo VeriFactu. Sin embargo, la parte correspondiente al envío automático a la AEAT no se publica en este repositorio, ese método tendrías que crearlo túi y hacerte rsponsable de ese desarrollo. Esto se debe a que el envío inmediato a la Agencia Tributaria convierte al software en un “SIF-VeriFactu”, sometido a un régimen sancionador específico y de esta manera garantizamos un módulo seguro y plenamente legal para cualquier instalación de Dolibarr.
+Este módulo incluye un panel de configuración donde el usuario puede activar o desactivar la funcionalidad relacionada con el modo VeriFactu. Sin embargo, la parte correspondiente al envío automático a la AEAT no se publica en este repositorio, ese método tendrías que crearlo tú y hacerte rsponsable de ese desarrollo. Esto se debe a que el envío inmediato a la Agencia Tributaria convierte al software en un “SIF-VeriFactu”, sometido a un régimen sancionador específico y de esta manera garantizamos un módulo seguro y plenamente legal para cualquier instalación de Dolibarr.
 Su objetivo principal es cumplir el **RSIF**, que es la parte obligatoria de la normativa.
 
 Sin embargo:
@@ -82,11 +83,11 @@ Sin embargo:
 - El XML generado **es válido** para ser enviado a la AEAT.  
 - La cadena de hashes cumple con la especificación RSIF y, por tanto, es **compatible con VeriFactu**.  
 - El usuario puede activar o añadir en cualquier momento un método de envío conforme a VeriFactu.  
-- El módulo incorpora puntos de integración pensados específicamente para esas ampliaciones.
-- Implementar el módulo te obliga a comprobar que cunmple todos los requiesits antes de usarlo en producción.
+- El módulo incorpora punto de integración pensado para esa ampliación en el archivo class/actions...php.
+- Implementar el módulo te obliga a comprobar que cunmple todos los requiesitos antes de usarlo en producción.
 
 Si deseas añadir el **envío automático** conforme al sistema VeriFactu,  
-**podemos ayudarte a completar este módulo con dicha funcionalidad**.  
+**podemos ayudarte a completar este módulo con dicha funcionalidad (sin cuotas mensuales o anuales)**.  
 La base RSIF ya está implementada y preparada para conectarse con los servicios de la AEAT cuando se necesite.
 
 ---
