@@ -126,6 +126,44 @@ Este módulo deja esa opción en manos del usuario, pero no la activa.
 
 ---
 
+---
+
+# ✔ Validación manual de tus XML con la AEAT
+
+Este módulo genera los ficheros XML conforme al esquema RSIF utilizado por la AEAT.  
+Si deseas comprobar por tu cuenta que los XML y los hashes cumplen la normativa, puedes validarlos directamente en el entorno oficial de pruebas de Hacienda.
+
+Para ello necesitas:
+
+---
+
+# ✔ Validación manual de XML desde el portal oficial de la AEAT
+
+Si deseas comprobar por tu cuenta que los XML generados por el módulo cumplen con el estándar RSIF, la AEAT dispone de un portal web de pruebas donde puedes **subir el XML manualmente** y obtener una validación inmediata.
+
+Acceso al portal de pruebas (PRE–Producción):
+
+https://preportal.aeat.es/PRE-Exteriores/Inicio/_menu_/VERI_FACTU___Sistemas_Informaticos_de_Facturacion/VERI_FACTU___Sistemas_Informaticos_de_Facturacion.html
+
+Para acceder, necesitarás:
+
+- Un **certificado cualificado de sello electrónico de entidad jurídica**  
+  (no sirve el certificado personal, ni el de administrador único, ni el certificado FNMT de representante).
+- Tener el certificado instalado en tu navegador o en tu gestor de certificados habitual.
+
+Entra en "Cliente de servicio web".
+
+Una vez dentro del portal, podrás:
+
+1. Seleccionar el XML generado por el módulo para cualquier factura.
+2. Elegir el endpoint: /wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP
+3. Subirlo directamente al validador de la AEAT.  
+4. Ver la respuesta XML y ahí veras si supera la validación, si hay errores de formato o contenido, o si la estructura se ajusta a RSIF/VeriFactu.
+
+
+Si encuentras alguna discrepancia o necesitas ayuda interpretando el resultado de la validación, puedes abrir un comentario en la sección **Issues** del repositorio o comentarlo en el post de LinkedIn que se enlaza a continuación.
+---
+
 # 📣 Comentarios y soporte
 
 Puedes dejar tus dudas o comentarios en este post:  
