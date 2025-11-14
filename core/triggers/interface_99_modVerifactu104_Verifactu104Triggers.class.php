@@ -1,7 +1,7 @@
 <?php
 
 require_once DOL_DOCUMENT_ROOT . '/core/triggers/dolibarrtriggers.class.php';
-
+require_once DOL_DOCUMENT_ROOT . '/custom/verifactu104/lib/verifactu104.lib.php';
 class InterfaceVerifactu104Triggers extends DolibarrTriggers
 {
     public function __construct($db)
@@ -55,7 +55,7 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 $facture->array_options['options_hash_verifactu'] = $hash_new;
 
                 $res = $facture->updateExtraField('hash_verifactu', $hash_new);
-
+                verifactu_add_history($object, 'SIF_HASH', 'Hash generado: ' . $hash_new);
                 if ($res <= 0) {
                     dol_syslog("VERIFACTU ERROR: No se pudo guardar hash_verifactu para factura id=" . $object->id, LOG_ERR);
                 } else {
@@ -63,8 +63,7 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 }
 
                 dol_syslog("VERIFACTU HASH OK: " . $hash_new, LOG_INFO);
-                $object->add_action('SIF_HASH', 'Hash generado: ' . $hash_new, $user->id);
-                // 5) Generar QR y guardarlo en el directorio de documentos de la factura
+                 // 5) Generar QR y guardarlo en el directorio de documentos de la factura
                 require_once dirname(__FILE__) . '/../../lib/phpqrcode.php';
 
                 // Contenido QR — ajustaremos al formato AEAT final, por ahora: trazabilidad básica
@@ -94,6 +93,7 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 // Generar QR
                 QRcode::png($qr_content, $qr_file, QR_ECLEVEL_L, 4);
                 dol_syslog("VERIFACTU QR generado en " . $qr_file);
+                verifactu_add_history($object, 'SIF_QR', 'QR generado: ' . basename($qr_file));
                 return 1;
 
             case 'BILL_UNVALIDATE':
