@@ -5,7 +5,7 @@
  */
 
 require_once DOL_DOCUMENT_ROOT . '/core/class/commonhookactions.class.php';
-
+require_once DOL_DOCUMENT_ROOT . '/custom/verifactu104/lib/verifactu104.lib.php';
 use setasign\Fpdi\Tcpdf\Fpdi;
 
 dol_syslog("VERIFACTU TEST CRÍTICO: ARCHIVO DE HOOK INCLUIDO Y PROCESADO", LOG_DEBUG);
@@ -16,195 +16,6 @@ class ActionsVerifactu104 extends CommonHookActions
     {
         $this->db = $db;
     }
-
-    // Método que envía el XML a la AEAT
-    public function sendToAEAT($xml_path, $object)
-    {
-        global $conf, $db;
-
-        require_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
-        require_once DOL_DOCUMENT_ROOT . '/core/lib/fichinter.lib.php';
-
-        dol_syslog("VERIFACTU_SEND: Iniciando envío a AEAT", LOG_DEBUG);
-        
-        // Solo enviar si el auto envío está activado
-        if (empty($conf->global->VERIFACTU_AUTO_SEND)) {
-            dol_syslog("VERIFACTU_SEND: Envío automático desactivado", LOG_INFO);
-            return 0;
-        }
-        // --- ✅ 1️⃣ Comprobación del estado de la factura anterior ---
-        $sql = "SELECT f.rowid, f.ref, ef.verifactu_estado 
-            FROM " . MAIN_DB_PREFIX . "facture AS f
-            INNER JOIN " . MAIN_DB_PREFIX . "facture_extrafields AS ef ON ef.fk_object = f.rowid
-            WHERE f.rowid < " . (int)$object->id . "
-            ORDER BY f.rowid DESC
-            LIMIT 1";
-
-        $resql = $db->query($sql);
-        $prev_enviado = true;
-
-        if ($resql && $db->num_rows($resql) > 0) {
-            $prev = $db->fetch_object($resql);
-            if ($prev->verifactu_estado != 'enviado') {
-                $prev_enviado = false;
-                dol_syslog("VERIFACTU_SEND: La factura anterior ($prev->ref) no está enviada, se usará RequerimientoSOAP.", LOG_WARNING);
-
-                if (method_exists($object, 'updateExtraField')) {
-                    $object->updateExtraField('verifactu_estado', 'pendiente');
-                }
-            }
-        }
-        // --- Determinar endpoint según hash y estado de la factura anterior ---
-        $prev_hash = '';
-        $prev_estado = '';
-
-        $sql2 = "SELECT ef.hash_verifactu, ef.verifactu_estado
-                 FROM ".MAIN_DB_PREFIX."facture_extrafields AS ef
-                 WHERE ef.fk_object = (
-                     SELECT MAX(f.rowid) 
-                     FROM ".MAIN_DB_PREFIX."facture AS f
-                     WHERE f.rowid < ".(int)$object->id."
-                 )";
-
-        $res2 = $db->query($sql2);
-        if ($res2 && $db->num_rows($res2) > 0) {
-            $o = $db->fetch_object($res2);
-            $prev_hash = trim($o->hash_verifactu);
-            $prev_estado = trim($o->verifactu_estado);
-        }
-
-        $is_first_or_not_sent = empty($prev_hash) || $prev_estado !== 'enviado';
-
-        if ($conf->global->VERIFACTU_MODE == 'test') {
-            $base = 'https://prewww1.aeat.es/wlpl/TIKE-CONT/ws/SistemaFacturacion/';
-        } elseif ($conf->global->VERIFACTU_MODE == 'prod') {
-            $base = 'https://www.agenciatributaria.gob.es/wlpl/TIKE-CONT/ws/SistemaFacturacion/';
-        } else {
-            dol_syslog("VERIFACTU_SEND: Modo no definido, no se envía nada", LOG_INFO);
-            return 0;
-        }
-
-        // Si no hay hash previo o la factura anterior no está enviada → usar RequerimientoSOAP
-        if ($is_first_or_not_sent) {
-            $url = $base . 'RequerimientoSOAP';
-            dol_syslog("VERIFACTU_SEND: Usando endpoint RequerimientoSOAP (primera factura o pendiente)", LOG_DEBUG);
-        } else {
-            $url = $base . 'VerifactuSOAP';
-            dol_syslog("VERIFACTU_SEND: Usando endpoint VerifactuSOAP (cadena activa)", LOG_DEBUG);
-        }
-
-        // Rutas de certificados
-        $cert_file = DOL_DATA_ROOT . '/verifactu104/certs/cert.pem';
-        $key_file  = DOL_DATA_ROOT . '/verifactu104/certs/key.pem';
-
-        if (!file_exists($xml_path)) {
-            dol_syslog("VERIFACTU_SEND: XML no encontrado en $xml_path", LOG_ERR);
-            return false;
-        }
-
-        $xml_data = file_get_contents($xml_path);
-
-        // === Envío real ===
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_SSLCERT        => $cert_file,
-            CURLOPT_SSLKEY         => $key_file,
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $xml_data,
-            CURLOPT_HTTPHEADER     => [
-                'Content-Type: text/xml; charset=utf-8',
-                'SOAPAction: ""',
-                'User-Agent: VeriFactu104/1.0'
-            ],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 30
-        ]);
-
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curl_error = curl_error($ch);
-        curl_close($ch);
-
-        // === Analizar resultado ===
-        $facture_dir = dirname($xml_path);
-        $resp_path = $facture_dir . '/acuse_verifactu.xml';
-
-
-        try {
-            $dom_resp = new DOMDocument('1.0', 'UTF-8');
-            $dom_resp->formatOutput = true;
-
-            if (empty($response)) {
-                // Crear XML genérico si no hay respuesta o es ilegible
-                $root = $dom_resp->createElement('ErrorAEAT');
-                $dom_resp->appendChild($root);
-                $root->appendChild($dom_resp->createElement('Codigo', $http_code));
-                $root->appendChild($dom_resp->createElement('Descripcion', $curl_error ?: 'Sin respuesta o XML inválido'));
-                $dom_resp->save($resp_path);
-            } else {
-                // Guardar XML devuelto por AEAT tal cual
-                file_put_contents($resp_path, $response);
-            }
-
-            dol_syslog("VERIFACTU_SEND: Acuse XML guardado en $resp_path", LOG_DEBUG);
-            
-        } catch (Exception $e) {
-            dol_syslog("VERIFACTU_SEND: ERROR al guardar XML de respuesta → " . $e->getMessage(), LOG_ERR);
-        }
-        // Analizar estado
-        $estado = 'error';
-        $mensaje = "Factura NO enviada, revisa el XML generado para ver los motivos.";
-        $type = 'errors';
-        if (!empty($response)) {
-            libxml_use_internal_errors(true);
-            $dom = new DOMDocument();
-
-            if ($dom->loadXML($response)) {
-                // Buscar el nodo <Resultado>
-                $resultado_nodes = $dom->getElementsByTagName('Resultado');
-                if ($resultado_nodes->length > 0) {
-                    $resultado = strtoupper(trim($resultado_nodes->item(0)->nodeValue));
-
-                    if ($resultado === 'OK') {
-                        $estado = 'enviado';
-                        $mensaje = "Factura enviada correctamente a AEAT.";
-                        $type = 'mesgs';
-                  }
-                }
-            }
-            // Buscar un posible nodo RetryAfter dentro del XML
-            $retry_nodes = $dom->getElementsByTagName('RetryAfter');
-            if ($retry_nodes->length > 0) {
-                $wait = (int) trim($retry_nodes->item(0)->nodeValue);
-                if ($wait > 0) {
-                    $mensaje .= " Intenta de nuevo dentro de {$wait} segundos.";
-                }
-            }
-        }
-  
-
-        if (method_exists($object, 'updateExtraField')) {
-            $object->updateExtraField('verifactu_estado', $estado);
-        } else {
-            $sql = "UPDATE " . MAIN_DB_PREFIX . "facture_extrafields 
-                SET verifactu_estado = '" . $db->escape($estado) . "' 
-                WHERE fk_object = " . (int)$object->id;
-            $db->query($sql);
-        }
-
-        // === Mensaxe Dolibarr ===
-
-        setEventMessages($mensaje, null, $type);
-
-
-
-        dol_syslog("VERIFACTU_SEND: Envío completado (HTTP $http_code, estado=$estado). Acuse guardado en $resp_path", LOG_DEBUG);
-
-        return ($estado == 'enviado');
-    }
-
-
 
 
     /**
@@ -440,10 +251,12 @@ class ActionsVerifactu104 extends CommonHookActions
 
         // Guardar SOAP completo
         $dom->save($xml_path);
+        verifactu_add_history($object, 'SIF_XML', 'XML generado: ' . basename($xml_path));
         dol_syslog("VERIFACTU_HOOK: XML VeriFactu SOAP completo generado en $xml_path", LOG_DEBUG);
         /* Envío automático a AEAT si está habilitado
         if (!empty($conf->global->VERIFACTU_AUTO_SEND) && in_array($conf->global->VERIFACTU_MODE, ['test', 'prod'])) {
-            $this->sendToAEAT($xml_path, $object);
+            $this->sendToAEAT($xml_path, $object); // Tu método para el envío a AEAT si activas el tipo Verifactu para tu empresa. 
+            
         }*/
 
         return 0;
