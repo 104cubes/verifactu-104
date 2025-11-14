@@ -250,17 +250,14 @@ class ActionsVerifactu104 extends CommonHookActions
 
         // Guardar SOAP completo
         $dom->save($xml_path);
-        $object->add_actionPerformed('SIF_XML', 'XML VeriFactu generado: ' . basename($xml_path));
+        $object->addActionPerformed('SIF_XML', 'XML VeriFactu generado: ' . basename($xml_path));
         dol_syslog("VERIFACTU_HOOK: XML VeriFactu SOAP completo generado en $xml_path", LOG_DEBUG);
         
-        /* Envío automático a AEAT si está habilitado
-        
+        // Envío automático a AEAT si está habilitado
         if (!empty($conf->global->VERIFACTU_AUTO_SEND) && in_array($conf->global->VERIFACTU_MODE, ['test', 'prod'])) {
-       
             $this->sendToAEAT($xml_path, $object);
-        } */
+        }
 
         return 0;
     }
-
 }
