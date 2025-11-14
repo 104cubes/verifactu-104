@@ -110,51 +110,146 @@ class ActionsVerifactu104 extends CommonHookActions
             dol_syslog("VERIFACTU_HOOK: ERROR FPDI → " . $e->getMessage(), LOG_ERR);
             return -1;
         }
-// === GENERAR XML VERIFACTU ===
-$xml_path = $conf->facture->dir_output . "/" . $ref . "/verifactu_" . $ref . ".xml";
+// === GENERAR XML VERIFACTU (SOAP completo según WSDL AEAT) ===
+        $xml_path = $conf->facture->dir_output . "/" . $ref . "/verifactu_" . $ref . ".xml";
 
-$dom = new DOMDocument('1.0', 'UTF-8');
-$dom->formatOutput = true;
-$root = $dom->createElementNS('https://www.agenciatributaria.gob.es/verifactu/v1', 'RegistroFacturacionAlta');
-$dom->appendChild($root);
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        $dom->formatOutput = true;
 
-// --- Emisor ---
-$emisor = $dom->createElement('Emisor');
-$emisor->appendChild($dom->createElement('NIF', $object->thirdparty->idprof1));
-$emisor->appendChild($dom->createElement('NombreRazon', $object->thirdparty->name));
-$root->appendChild($emisor);
+        // Namespaces
+        $soapenv_ns = 'http://schemas.xmlsoap.org/soap/envelope/';
+        $sfLR_ns    = 'https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd';
 
-// --- Receptor ---
-$receptor = $dom->createElement('Receptor');
-$receptor->appendChild($dom->createElement('NIF', $object->thirdparty->idprof1));
-$receptor->appendChild($dom->createElement('NombreRazon', $object->thirdparty->name));
-$root->appendChild($receptor);
+        // Envelope
+        $envelope = $dom->createElementNS($soapenv_ns, 'soapenv:Envelope');
+        $envelope->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:sfLR', $sfLR_ns);
+        $dom->appendChild($envelope);
 
-// --- Factura ---
-$factura = $dom->createElement('Factura');
-$factura->appendChild($dom->createElement('NumeroFactura', $object->ref));
-$factura->appendChild($dom->createElement('SerieFactura', $object->ref_client));
-$factura->appendChild($dom->createElement('FechaExpedicion', substr($object->date, 0, 10)));
-$factura->appendChild($dom->createElement('FechaOperacion', substr($object->date, 0, 10)));
-$factura->appendChild($dom->createElement('TipoFactura', 'F1'));
-$factura->appendChild($dom->createElement('DescripcionOperacion', $object->note_public));
-$factura->appendChild($dom->createElement('BaseImponible', number_format($object->total_ht, 2, '.', '')));
-$factura->appendChild($dom->createElement('TipoIVA', '21.00'));
-$factura->appendChild($dom->createElement('CuotaIVA', number_format($object->total_tva, 2, '.', '')));
-$factura->appendChild($dom->createElement('ImporteTotal', number_format($object->total_ttc, 2, '.', '')));
-$root->appendChild($factura);
+        // Header vacío
+        $header = $dom->createElement('soapenv:Header');
+        $envelope->appendChild($header);
 
-// --- Sistema ---
-$sistema = $dom->createElement('Sistema');
-$sistema->appendChild($dom->createElement('CodigoSistema', 'VERIFACTU104'));
-$sistema->appendChild($dom->createElement('Productor', '104 CUBES S.L.'));
-$sistema->appendChild($dom->createElement('HashAnterior', '')); // Recuperar de extra field si existe
-$sistema->appendChild($dom->createElement('HashActual', $hash_val));
-$sistema->appendChild($dom->createElement('FechaHoraGeneracion', date('c')));
-$root->appendChild($sistema);
+        // Body
+        $body = $dom->createElement('soapenv:Body');
+        $envelope->appendChild($body);
 
-// Guardar XML
-$dom->save($xml_path);
+        // RegFactuSistemaFacturacion
+        $reg = $dom->createElement('sfLR:RegFactuSistemaFacturacion');
+        $body->appendChild($reg);
+
+        // Datos emisor (empresa) para Cabecera y otros
+        $nif_empresa = $conf->global->MAIN_INFO_SIREN ?: $conf->global->MAIN_INFO_TVAINTRA ?: 'B00000000';
+        $nombre_empresa = $conf->global->MAIN_INFO_SOCIETE_NOM ?: 'Empresa Dolibarr';
+
+        // Cabecera
+        $cabecera = $dom->createElement('sfLR:Cabecera');
+        $reg->appendChild($cabecera);
+
+        $idVersion = $dom->createElement('sfLR:IDVersion', '1.0');
+        $cabecera->appendChild($idVersion);
+
+        $titular = $dom->createElement('sfLR:Titular');
+        $cabecera->appendChild($titular);
+
+        $tit_nif = $dom->createElement('sfLR:NIF', $nif_empresa);
+        $titular->appendChild($tit_nif);
+
+        $tit_nombre = $dom->createElement('sfLR:NombreRazon', $nombre_empresa);
+        $titular->appendChild($tit_nombre);
+
+        $tipoCom = $dom->createElement('sfLR:TipoComunicacion', 'A0');
+        $cabecera->appendChild($tipoCom);
+
+        // RegistroFacturacionAlta
+        $rfa = $dom->createElement('sfLR:RegistroFacturacionAlta');
+        $reg->appendChild($rfa);
+
+        // ObligadoEmisor
+        $obl = $dom->createElement('sfLR:ObligadoEmisor');
+        $rfa->appendChild($obl);
+
+        $obl_nif = $dom->createElement('sfLR:NIF', $nif_empresa);
+        $obl->appendChild($obl_nif);
+
+        // Emisor
+        $emisor = $dom->createElement('sfLR:Emisor');
+        $rfa->appendChild($emisor);
+
+        $emi_nif = $dom->createElement('sfLR:NIF', $nif_empresa);
+        $emisor->appendChild($emi_nif);
+
+        $emi_nom = $dom->createElement('sfLR:NombreRazon', $nombre_empresa);
+        $emisor->appendChild($emi_nom);
+
+        // Receptor (cliente)
+        $receptor = $dom->createElement('sfLR:Receptor');
+        $rfa->appendChild($receptor);
+
+        $rec_nif = $dom->createElement('sfLR:NIF', $object->thirdparty->idprof1);
+        $receptor->appendChild($rec_nif);
+
+        $rec_nom = $dom->createElement('sfLR:NombreRazon', $object->thirdparty->name);
+        $receptor->appendChild($rec_nom);
+
+        // Factura
+        $factura = $dom->createElement('sfLR:Factura');
+        $rfa->appendChild($factura);
+
+        $fact_num = $dom->createElement('sfLR:NumeroFactura', $object->ref);
+        $factura->appendChild($fact_num);
+
+        $fact_serie = $dom->createElement('sfLR:SerieFactura', '');
+        $factura->appendChild($fact_serie);
+
+        $fecha = dol_print_date($object->date, '%Y-%m-%d');
+        $fact_fexp = $dom->createElement('sfLR:FechaExpedicion', $fecha);
+        $factura->appendChild($fact_fexp);
+
+        $fact_fop = $dom->createElement('sfLR:FechaOperacion', $fecha);
+        $factura->appendChild($fact_fop);
+
+        $fact_tipo = $dom->createElement('sfLR:TipoFactura', 'F1');
+        $factura->appendChild($fact_tipo);
+
+        $descripcion = !empty($object->note_public) ? $object->note_public : 'Factura emitida mediante VeriFactu';
+        $fact_desc = $dom->createElement('sfLR:DescripcionOperacion', $descripcion);
+        $factura->appendChild($fact_desc);
+
+        $fact_base = $dom->createElement('sfLR:BaseImponible', number_format($object->total_ht, 2, '.', ''));
+        $factura->appendChild($fact_base);
+
+        $tipo_iva_val = number_format($object->lines[0]->tva_tx ?: 21, 2, '.', '');
+        $fact_tiva = $dom->createElement('sfLR:TipoIVA', $tipo_iva_val);
+        $factura->appendChild($fact_tiva);
+
+        $fact_cuota = $dom->createElement('sfLR:CuotaIVA', number_format($object->total_tva, 2, '.', ''));
+        $factura->appendChild($fact_cuota);
+
+        $fact_total = $dom->createElement('sfLR:ImporteTotal', number_format($object->total_ttc, 2, '.', ''));
+        $factura->appendChild($fact_total);
+
+        // Sistema
+        $sistema = $dom->createElement('sfLR:Sistema');
+        $rfa->appendChild($sistema);
+
+        $sis_cod = $dom->createElement('sfLR:CodigoSistema', 'VERIFACTU104');
+        $sistema->appendChild($sis_cod);
+
+        $sis_prod = $dom->createElement('sfLR:Productor', '104 CUBES S.L.');
+        $sistema->appendChild($sis_prod);
+
+        // TODO: incorporar hash anterior real cuando la cadena esté operativa
+        $sis_hash_ant = $dom->createElement('sfLR:HashAnterior', '');
+        $sistema->appendChild($sis_hash_ant);
+
+        $sis_hash_act = $dom->createElement('sfLR:HashActual', $hash_val);
+        $sistema->appendChild($sis_hash_act);
+
+        $sis_fgen = $dom->createElement('sfLR:FechaHoraGeneracion', date('c'));
+        $sistema->appendChild($sis_fgen);
+
+        // Guardar SOAP completo
+        $dom->save($xml_path);
 dol_syslog("VERIFACTU_HOOK: XML VeriFactu generado en $xml_path", LOG_DEBUG);
 
         return 0;
