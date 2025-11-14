@@ -20,6 +20,7 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
         switch ($action) {
             case 'BILL_VALIDATE':
                 dol_syslog("VERIFACTU: Generando hash para factura " . $object->ref . " (id=" . $object->id . ")");
+                // Se añade tener en cuenta la serie de la factura.
                 $serie = preg_replace('/[^A-Za-z]/', '', (string) $object->ref);
                 // 1) Recuperar hash previo (última factura validada con hash)
                 $sqlprev = "SELECT t.hash_verifactu
@@ -100,3 +101,4 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
         }
     }
 }
+
