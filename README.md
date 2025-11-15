@@ -5,7 +5,7 @@
  
 **No confundir RSIF y Ley Antifraude con VERI*FACTU** 
 
-El **módulo genera los requisitos de la factura para VERI*FCTU** y con ello cumple con el **RSIF** (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato, lee más abajo.
+El **módulo genera los requisitos de la factura para VERI*FCTU** y con ello cumpliría con el **RSIF** (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato, lee más abajo.
 
 ---
 
