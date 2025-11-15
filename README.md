@@ -6,7 +6,8 @@
 **VERIFACTU NO ES OBLIGATORIO. LO OBLIGATORIO ES EL RSIF**
 **Este módulo no realiza el envío automático a la AEAT. Por lo tanto NO es un SIF-VeriFactu**  
 
-El **módulo genera los requisitos de la factura para VERI*FCTU** y con ello cumple con el RSIF (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato lle más abajo.
+El **módulo genera los requisitos de la factura para VERI*FCTU** y con ello cumple con el RSIF (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato lee más abajo.
+
 ---
 
 # 📌 Descripción general
