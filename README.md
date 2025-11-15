@@ -78,7 +78,7 @@ NO está en este código.
 Este módulo incluye un panel de configuración donde el usuario puede activar o desactivar la funcionalidad relacionada con el modo VeriFactu. Sin embargo, la parte correspondiente al envío automático a la AEAT no se publica en este repositorio, ese método tendrías que crearlo tú y hacerte rsponsable de ese desarrollo. Esto se debe a que el envío inmediato a la Agencia Tributaria convierte al software en un “SIF-VeriFactu”, sometido a un régimen sancionador específico y de esta manera garantizamos un módulo seguro y plenamente legal para cualquier instalación de Dolibarr.
 Su objetivo principal es cumplir el **RSIF**, que es la parte obligatoria de la normativa.
 
-Sin embargo:
+####Sin embargo:
 
 - El XML generado **es válido** para ser enviado a la AEAT.  
 - La cadena de hashes cumple con la especificación RSIF y, por tanto, es **compatible con VeriFactu**.  
