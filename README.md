@@ -38,7 +38,7 @@ Este módulo permite al usuario cumplir:
 - Inalterabilidad  
 - Evidencia y trazabilidad  
 
-**⚠️ El que instale este módulo debe verificar este cumplimiento. Se decribe más abajo una forma de hacerlo.**
+###⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable este cumplimiento. Se decribe más abajo una forma de hacerlo.###
 
 ---
 
