@@ -27,6 +27,21 @@ Con esto, cualquier instalación de Dolibarr equipada con este módulo **cumple 
 
 ---
 
+# 📘 Cumplimiento legal
+
+Este módulo permite al usuario cumplir:
+
+### ✔ La obligación RSIF (obligatoria para todas las empresas)
+- Registro encadenado  
+- XML RSIF  
+- Hash y QR  
+- Inalterabilidad  
+- Evidencia y trazabilidad  
+
+**El que instale este módulo debe verificar este cumplimiento. Describimos más abajo una forma de hacerlo.**
+
+---
+
 # 📋 Funcionalidades incluidas
 
 ### ✔ 1. Hash encadenado automático
@@ -87,21 +102,6 @@ Este módulo incluye un panel de configuración donde el usuario puede activar o
 Si deseas añadir el **envío automático** conforme al sistema VeriFactu,  
 **podemos ayudarte a completar este módulo con dicha funcionalidad (sin cuotas mensuales o anuales)**.  
 La base RSIF ya está implementada y preparada para conectarse con los servicios de la AEAT cuando se necesite.
-
----
-
-# 📘 Cumplimiento legal
-
-Este módulo permite al usuario cumplir:
-
-### ✔ La obligación RSIF (obligatoria para todas las empresas)
-- Registro encadenado  
-- XML RSIF  
-- Hash y QR  
-- Inalterabilidad  
-- Evidencia y trazabilidad  
-
-**El que instale este módulo debe verificar este cumplimiento. Describimos más abajo una forma de hacerlo.**
 
 ---
 
