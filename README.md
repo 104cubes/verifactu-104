@@ -1,12 +1,12 @@
 # Módulo Dolibarr — Verifactu 104 (RSIF para S.L.)
 ### Cumplimiento con Ley antifraude. Reglamento RSIF — Compatible con VeriFactu.
 
-## ⚠️ Aviso importante
+## Aviso
  
-**VERIFACTU NO ES OBLIGATORIO. LO OBLIGATORIO ES EL RSIF**
+**No confundir RSIF y Ley Antifraude con VERI*FACTU**
 **Este módulo no realiza el envío automático a la AEAT. Por lo tanto NO es un SIF-VeriFactu**  
 
-El **módulo genera los requisitos de la factura para VERI*FCTU** y con ello cumple con el RSIF (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato lee más abajo.
+El **módulo genera los requisitos de la factura para VERI*FCTU** y con ello cumple con el **RSIF** (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato, lee más abajo.
 
 ---
 
