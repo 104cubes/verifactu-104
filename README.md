@@ -5,7 +5,7 @@
  
 **No confundir RSIF y Ley Antifraude con VERI*FACTU** 
 
-El **módulo genera los requisitos de la factura para VERI*FCTU** y con ello cumpliría con el **RSIF** (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato, lee más abajo.
+El **módulo genera los requisitos de la factura para VERI*FCTU** para con ello cumplir también con el **RSIF** (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato, lee más abajo.
 
 ---
 
@@ -23,7 +23,7 @@ Este módulo garantiza la **integridad, trazabilidad e inalterabilidad** de cada
 - Página certificada adicional en el PDF  
 - Conservación de toda la evidencia digital en el directorio de cada factura  
 
-Con esto, cualquier instalación de Dolibarr equipada con este módulo **cumple la normativa obligatoria RSIF**, independientemente de que el usuario desee activar o no la modalidad **VeriFactu (envío inmediato a la AEAT)**.
+Con esto, cualquier instalación de Dolibarr equipada con este módulo **cumpliría la normativa obligatoria RSIF**, independientemente de que el usuario desee activar o no la modalidad **VeriFactu (envío inmediato a la AEAT)**.
 
 ---
 
