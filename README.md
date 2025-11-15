@@ -6,13 +6,13 @@
 **VERIFACTU NO ES OBLIGATORIO. LO OBLIGATORIO ES EL RSIF**
 **Este módulo no realiza el envío automático a la AEAT. Que no es parte obligatoria del nuevo reglamento**  
 **Por lo tanto NO es un SIF-VeriFactu.** 
-Su propósito es cumplir con el RSIF (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato a la AEAT, sin embargo el módulo está preparado para crear el método que lo haga. Te ayudamos.
+Su propósito es cumplir con el RSIF (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato a la AEAT, sin embargo el **módulo genera los requisitos de la factura para VERI*FCTU** y está preparado para crear el método que lo haga. Te ayudamos.
 
 ---
 
 # 📌 Descripción general
 
-**Verifactu 104** es un módulo desarrollado por **104 CUBES S.L.** para **Dolibarr ERP/CRM**, que implementa íntegramente los requisitos técnicos del **RSIF** derivados del Real Decreto 1007/2023.
+**Verifactu 104** es un módulo desarrollado por **104 CUBES S.L.** para **Dolibarr ERP/CRM**, que implementa íntegramente los requisitos técnicos del **RSIF** derivados del Real Decreto 1007/2023 con compatibilidad con exigencias de VERI*FACTU.
 
 Este módulo garantiza la **integridad, trazabilidad e inalterabilidad** de cada factura, mediante:
 
