@@ -153,6 +153,8 @@ Una vez dentro, podrás:
 
 
 Si encuentras alguna discrepancia o necesitas ayuda interpretando el resultado de la validación, puedes abrir un comentario en la sección **Issues** del repositorio o comentarlo en el post de LinkedIn que se enlaza a continuación.
+
+#### ⚠️  Recuerda que es de obligado cumplimiento que certifiques el cumplimiento de la normativa so pena de grandes multas según artículo 201. bis de la Ley Antifraude. ####
 ---
 
 # 📣 Comentarios y soporte
