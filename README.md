@@ -7,6 +7,8 @@
 
 El **módulo genera los requisitos de la factura para VERI*FCTU** para con ello cumplir también con el **RSIF** (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato, lee más abajo.
 
+#### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable de este cumplimiento. Se decribe más abajo una forma de hacerlo. ####
+
 ---
 
 # 📌 Descripción general
@@ -38,7 +40,7 @@ Este módulo permite al usuario cumplir:
 - Inalterabilidad  
 - Evidencia y trazabilidad  
 
-#### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable este cumplimiento. Se decribe más abajo una forma de hacerlo. ####
+#### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable de este cumplimiento. Se decribe más abajo una forma de hacerlo. ####
 
 ---
 
