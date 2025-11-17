@@ -9,7 +9,7 @@ El módulo genera los requisitos de la factura para VERI*FCTU para con ello cump
 
 #### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable de este cumplimiento. Se decribe más abajo una forma de hacer la verificaciób. ####
 
-# 📌 Hasta ahora ningún desarrollador de módulo veri*factu para Dolybarr se hace responsable del cumplimiento de la normativa vía certificado del desarrollador del cumplimiento. Punto obligatorio para PYMES en la normativa sancionadora de la Ley Antifraude.Si usas un SIF, debe ser certificado por un desarrollador, si no, pagas 50.000 € como pyme. 
+# 📌 Hasta ahora ningún desarrollador de módulo veri*factu para Dolybarr se hace responsable del cumplimiento de la normativa vía certificado del desarrollador del cumplimiento. Punto obligatorio para PYMES en la normativa sancionadora de la Ley Antifraude. Si usas un SIF, debe ser certificado por un desarrollador, si no, como PYME pagas 50.000 €. 
 
 ---
 
