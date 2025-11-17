@@ -2,15 +2,76 @@
 
 require_once DOL_DOCUMENT_ROOT . '/core/triggers/dolibarrtriggers.class.php';
 require_once DOL_DOCUMENT_ROOT . '/custom/verifactu104/lib/verifactu104.lib.php';
+
 class InterfaceVerifactu104Triggers extends DolibarrTriggers
 {
     public function __construct($db)
     {
         parent::__construct($db);
-        $this->family = "billing";
-        $this->description = "Triggers para Verifactu: hash encadenado y QR";
-        $this->version = self::VERSIONS['dev'];
-        $this->picto = 'verifactu104@verifactu104';
+        $this->family      = "billing";
+        $this->description = "Triggers Verifactu104: hash encadenado y QR";
+        $this->version     = self::VERSIONS['dev'];
+        $this->picto       = 'verifactu104@verifactu104';
+    }
+
+    /**
+     * Construye la cadena OFICIAL AEAT para la huella encadenada del Registro de Alta.
+     *
+     * Formato:
+     *  IDEmisorFactura=...&
+     *  NumSerieFactura=...&
+     *  FechaExpedicionFactura=DD-MM-AAAA&
+     *  TipoFactura=F1&
+     *  CuotaTotal=...&
+     *  ImporteTotal=...&
+     *  Huella=...&
+     *  FechaHoraHusoGenRegistro=YYYY-MM-DDThh:mm:ss+zz:zz
+     */
+    private function buildHashStringAEAT($object, $conf, $hash_prev)
+    {
+        if (empty($object->thirdparty)) {
+            $object->fetch_thirdparty();
+        }
+
+        // Emisor
+        $emisor_nif = $conf->global->MAIN_INFO_SIREN
+            ?: $conf->global->MAIN_INFO_TVAINTRA
+            ?: 'B00000000';
+
+        // Nº factura (NumSerieFactura en la doc de AEAT)
+        $ref_factura = !empty($object->newref) ? $object->newref : $object->ref;
+
+        // Fecha de expedición (DD-MM-AAAA)
+        // Puedes cambiar a date_validation si quieres ser más estricto:
+        $fecha_exp = dol_print_date($object->date, '%d-%m-%Y');
+
+        // Tipo de factura: simplificamos a F1 (factura completa normal)
+        // En el futuro se puede mapear según $object->type
+        $tipo_factura = 'F1';
+
+        // Cuota total (IVA total)
+        $cuota_total = number_format((float) $object->total_tva, 2, '.', '');
+
+        // Importe total factura
+        $importe_total = number_format((float) $object->total_ttc, 2, '.', '');
+
+        // Huella anterior (puede ser vacía en la primera factura)
+        $hash_prev = $hash_prev ?: "";
+
+        // Fecha-hora de generación del registro en formato ISO con huso (YYYY-MM-DDThh:mm:ss+zz:zz)
+        $fecha_hora_registro = date('c'); // p.ej. 2025-11-16T10:23:45+01:00
+
+        $parts = [];
+        $parts[] = 'IDEmisorFactura=' . $emisor_nif;
+        $parts[] = 'NumSerieFactura=' . $ref_factura;
+        $parts[] = 'FechaExpedicionFactura=' . $fecha_exp;
+        $parts[] = 'TipoFactura=' . $tipo_factura;
+        $parts[] = 'CuotaTotal=' . $cuota_total;
+        $parts[] = 'ImporteTotal=' . $importe_total;
+        $parts[] = 'Huella=' . $hash_prev;
+        $parts[] = 'FechaHoraHusoGenRegistro=' . $fecha_hora_registro;
+
+        return implode('&', $parts);
     }
 
     public function runTrigger($action, $object, User $user, Translate $langs, Conf $conf)
@@ -18,122 +79,97 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
         if (!isModEnabled('verifactu104')) return 0;
 
         switch ($action) {
+
             case 'BILL_VALIDATE':
-                dol_syslog("VERIFACTU: Generando hash para factura " . $object->ref . " (id=" . $object->id . ")");
+                dol_syslog("VERIFACTU: Generando hash para factura " . $object->ref);
+
+                // -----------------------------
+                // 1) Recuperar hash previo (última factura con hash_verifactu)
+                // -----------------------------
                 $serie = preg_replace('/[^A-Za-z]/', '', (string) $object->ref);
-                // 1) Recuperar hash previo (última factura validada con hash)
+
                 $sqlprev = "SELECT t.hash_verifactu
-                FROM " . MAIN_DB_PREFIX . "facture_extrafields as t
-                INNER JOIN " . MAIN_DB_PREFIX . "facture as f ON f.rowid = t.fk_object
-                WHERE t.hash_verifactu IS NOT NULL
-                AND f.fk_statut = 1
-                AND f.ref LIKE '" . $this->db->escape($serie) . "%'
-                ORDER BY f.date_validation DESC, f.rowid DESC
-                LIMIT 1";
-                $resprev = $this->db->query($sqlprev);
+                    FROM " . MAIN_DB_PREFIX . "facture_extrafields t
+                    INNER JOIN " . MAIN_DB_PREFIX . "facture f ON f.rowid = t.fk_object
+                    WHERE t.hash_verifactu IS NOT NULL
+                    AND f.fk_statut = 1
+                    AND f.ref LIKE '" . $this->db->escape($serie) . "%'
+                    ORDER BY f.date_validation DESC, f.rowid DESC
+                    LIMIT 1";
+
+                $resprev   = $this->db->query($sqlprev);
                 $hash_prev = "";
                 if ($resprev && $objprev = $this->db->fetch_object($resprev)) {
                     $hash_prev = $objprev->hash_verifactu;
                 }
 
-                // 2) Formato Verifactu (AEAT)
-                // Cadena: NIF + fecha ISO + total con 2 decimales + hash anterior
-                $emisor_nif = $conf->global->MAIN_INFO_SIREN ?: $conf->global->MAIN_INFO_TVAINTRA ?: 'B00000000';
-                $fecha_iso = dol_print_date($object->date_validation, "%Y-%m-%dT%H:%M:%S");
-                $total_fmt = number_format((float)$object->total_ttc, 2, '.', '');
+                // -----------------------------
+                // 2) Cadena OFICIAL AEAT para la huella
+                // -----------------------------
+                $cadena = $this->buildHashStringAEAT($object, $conf, $hash_prev);
 
-                $cadena = $emisor_nif . "|" . $fecha_iso . "|" . $total_fmt . "|" . $hash_prev;
+                // -----------------------------
+                // 3) Hash SHA256 → HEX MAYÚSCULAS (formato oficial)
+                // -----------------------------
+                $hash_new = strtoupper(hash("sha256", $cadena));
 
-                // 3) Hash SHA256 binario + Base64 (formato correcto AEAT)
-                $hash_new = base64_encode(hash("sha256", $cadena, true));
-
-                // 4) Guardar hash en el extrafield
+                // Guardar extrafield
                 $facture = new Facture($this->db);
-                $facture->fetch($object->id);         // carga completa
-                $facture->fetch_optionals();          // carga extrafields
+                $facture->fetch($object->id);
+                $facture->fetch_optionals();
+                $facture->updateExtraField('hash_verifactu', $hash_new);
 
-                $facture->array_options['options_hash_verifactu'] = $hash_new;
-
-                $res = $facture->updateExtraField('hash_verifactu', $hash_new);
                 verifactu_add_history($object, 'SIF_HASH', 'Hash generado: ' . $hash_new);
-                if ($res <= 0) {
-                    dol_syslog("VERIFACTU ERROR: No se pudo guardar hash_verifactu para factura id=" . $object->id, LOG_ERR);
-                } else {
-                    dol_syslog("VERIFACTU HASH GUARDADO OK (extrafields)", LOG_INFO);
-                }
-
-                dol_syslog("VERIFACTU HASH OK: " . $hash_new, LOG_INFO);
-                 // 5) Generar QR y guardarlo en el directorio de documentos de la factura
+                // 4) QR — FORMATO OFICIAL AEAT (URL)
                 require_once dirname(__FILE__) . '/../../lib/phpqrcode.php';
 
-                // Contenido QR — ajustaremos al formato AEAT final, por ahora: trazabilidad básica
-                // --- QR Formato Verifactu para S.L. ---
-                // 5) NIF del receptor si existe
-                $receptor_nif = "";
-                if (!empty($object->thirdparty->idprof1)) {
-                    $receptor_nif = $object->thirdparty->idprof1;
-                } elseif (!empty($object->thirdparty->tva_intra)) {
-                    $receptor_nif = $object->thirdparty->tva_intra;
+                if (empty($object->thirdparty)) {
+                    $object->fetch_thirdparty();
                 }
+
+                // Emisor
+                $emisor_nif = $conf->global->MAIN_INFO_SIREN
+                    ?: $conf->global->MAIN_INFO_TVAINTRA
+                    ?: 'B00000000';
+
+                // Datos factura
                 $ref_factura = !empty($object->newref) ? $object->newref : $object->ref;
-                // 6) Contenido QR conforme AEAT
-                $qr_content = "VERIFACTU|1|"
-                    . $emisor_nif . "|"
-                    . $ref_factura . "|"
-                    . $receptor_nif . "|"
-                    . number_format((float)$object->total_ttc, 2, '.', '') . "|"
-                    . $hash_new;
-                // Directorio donde Dolibarr guarda los PDFs y adjuntos de la factura
+                $fecha_qr    = dol_print_date($object->date, '%d-%m-%Y');     // MISMA fecha que hash
+                $total_fmt   = number_format((float) $object->total_ttc, 2, '.', '');
+
+                // Seleccionar URL
+                $mode = $conf->global->VERIFACTU_MODE ?? '';
+                if (in_array($mode, ['test', 'prod'], true)) {
+                    $qr_url_base = "https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQR";
+                } else {
+                    $qr_url_base = "https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQRNoVerifactu";
+                }
+
+                // QR oficial
+                $qr_content = $qr_url_base
+                    . "?nif=" . urlencode($emisor_nif)
+                    . "&numserie=" . urlencode($ref_factura)
+                    . "&fecha=" . urlencode($fecha_qr)
+                    . "&importe=" . urlencode($total_fmt)
+                    . "&hash=" . urlencode($hash_new);
+
+                // Guardar QR
                 $facture_dir = $conf->facture->dir_output . "/" . $object->ref;
                 dol_mkdir($facture_dir);
-
-                // Ruta del archivo
                 $qr_file = $facture_dir . "/verifactu_qr.png";
 
-                // Generar QR
-                QRcode::png($qr_content, $qr_file, QR_ECLEVEL_L, 4);
-                dol_syslog("VERIFACTU QR generado en " . $qr_file);
-                verifactu_add_history($object, 'SIF_QR', 'QR generado: ' . basename($qr_file));
+                QRcode::png($qr_content, $qr_file, QR_ECLEVEL_M, 4);
+
+                verifactu_add_history($object, 'SIF_QR', 'QR generado');
+
                 return 1;
 
             case 'BILL_UNVALIDATE':
-                // Cargar extrafields
-                $object->fetch_optionals();
+                // Aquí podrías reimplementar la lógica de bloqueo (última factura, estado enviado, etc.)
+                // De momento, mantenemos el bloqueo duro:
+                setEventMessages("No se puede pasar a borrador una factura enviada a la AEAT.", null, 'errors');
+                return -1;
 
-                // Estado SIF: si está enviada → bloqueo total
-                $estado_sif = $object->array_options['options_verifactu_estado'] ?? '';
-
-                if ($estado_sif === 'enviado') {
-                    dol_syslog("VERIFACTU: No se puede pasar a borrador una factura ENVIADA: " . $object->ref, LOG_WARNING);
-                    setEventMessages("No se puede pasar a borrador una factura enviada a la AEAT.", null, 'errors');
-                    return -1;
-                }
-
-                // Si NO está enviada → solo permitir UNVALIDATE de la última factura de la serie
-                $serie = preg_replace('/[^A-Za-z]/', '', (string) $object->ref);
-
-                $sql_last = "SELECT f.rowid
-                FROM " . MAIN_DB_PREFIX . "facture as f
-                WHERE f.fk_statut = 1
-                AND f.ref LIKE '" . $this->db->escape($serie) . "%'
-                ORDER BY f.date_validation DESC, f.rowid DESC
-                LIMIT 1";
-
-                $res_last = $this->db->query($sql_last);
-                $last_id = 0;
-                if ($res_last && $obj_last = $this->db->fetch_object($res_last)) {
-                    $last_id = (int) $obj_last->rowid;
-                }
-
-                // Si NO es la última → bloqueo
-                if ($object->id != $last_id) {
-                    dol_syslog("VERIFACTU: UNVALIDATE BLOQUEADO. No es la última factura de la serie: " . $object->ref, LOG_WARNING);
-                    setEventMessages("Solo puede desvalidarse la última factura validada de la serie.", null, 'errors');
-                    return -1;
-                }
-
-                // Si llega aquí → se puede pasar a borrador
-                return 0;
             default:
                 return 0;
         }
