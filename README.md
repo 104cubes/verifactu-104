@@ -1,5 +1,5 @@
 # Módulo Dolibarr — Verifactu 104 (RSIF para S.L.)
-### Cumplimiento con Ley antifraude. Reglamento RSIF — Compatible con VeriFactu.
+### APROXIMACIÓN al Cumplimiento con Ley antifraude. Reglamento RSIF — Compatible con VeriFactu.
 
 ## Aviso
  
