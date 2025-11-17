@@ -5,9 +5,11 @@
  
 **No confundir RSIF y Ley Antifraude con VERI*FACTU** 
 
-El **módulo genera los requisitos de la factura para VERI*FCTU** para con ello cumplir también con el **RSIF** (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la nueva normativa antifraude. Para el envío inmediato, lee más abajo.
+El módulo genera los requisitos de la factura para VERI*FCTU para con ello cumplir también con el **RSIF** (Reglamento de los Sistemas Informáticos de Facturación), **que es la parte obligatoria** de la normativa de la Ley Antifraude. En cualquier caso correspponde a tí modificar el código para validar que cumple con la Ley. Debes probar y modificar el código según tus necesidades y hacerte responable vía documento firmado y enlazado de que tu software comleto Solibarr + Verifactu104 cumple con la Ley.
 
-#### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable de este cumplimiento. Se decribe más abajo una forma de hacerlo. ####
+#### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable de este cumplimiento. Se decribe más abajo una forma de hacer la verificaciób. ####
+
+# 📌 Hasta ahora ningún desarrollador de módulo veri*factu para Dolybarr se hace responsable del cumplimiento de la normativa vía certificado del desarrollador del cumplimiento. Punto obligatorio para PYMES en la normativa sancionadora de la Ley Antifraude.Si usas un SIF, debe ser certificado por un desarrollador, si no, pagas 50.000 € como pyme. 
 
 ---
 
