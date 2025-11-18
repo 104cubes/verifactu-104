@@ -73,7 +73,76 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
 
         return implode('&', $parts);
     }
+    /**
+     * Obtiene el último hash generado para la misma serie de la factura
+     * (puede ser de un alta o de un evento registrado en actioncomm),
+     * para encadenar correctamente la huella.
+     */
+    private function getLastHashForSerie($object)
+    {
+        // Serie = parte alfabética de la referencia
+        $serie = preg_replace('/[^A-Za-z]/', '', (string) $object->ref);
 
+        $records = array();
+
+        // 1) Hash de ALTA de facturas de la misma serie
+        $sql = "
+            SELECT ef.options_hash_verifactu AS hash, ef.options_verifactu_timestamp AS ts
+            FROM " . MAIN_DB_PREFIX . "facture_extrafields ef
+            JOIN " . MAIN_DB_PREFIX . "facture f ON f.rowid = ef.fk_object
+            WHERE ef.options_hash_verifactu IS NOT NULL
+              AND ef.options_hash_verifactu <> ''
+              AND f.ref LIKE '" . $this->db->escape($serie) . "%'
+        ";
+
+        $res = $this->db->query($sql);
+        if ($res) {
+            while ($obj = $this->db->fetch_object($res)) {
+                $records[] = array(
+                    'hash' => $obj->hash,
+                    'ts'   => (int) $obj->ts,
+                );
+            }
+        }
+
+        // 2) Eventos VeriFactu (actioncomm_extrafields) asociados a facturas de la misma serie
+        $sql2 = "
+            SELECT ace.verifactu_event_hash AS hash, ace.verifactu_event_timestamp AS ts
+            FROM " . MAIN_DB_PREFIX . "actioncomm ac
+            JOIN " . MAIN_DB_PREFIX . "actioncomm_extrafields ace ON ac.id = ace.fk_object
+            WHERE ac.elementtype = 'facture'
+              AND ac.fk_element IN (
+                    SELECT f2.rowid
+                    FROM " . MAIN_DB_PREFIX . "facture f2
+                    WHERE f2.ref LIKE '" . $this->db->escape($serie) . "%'
+              )
+        ";
+
+        $res2 = $this->db->query($sql2);
+        if ($res2) {
+            while ($obj2 = $this->db->fetch_object($res2)) {
+                if (!empty($obj2->hash)) {
+                    $records[] = array(
+                        'hash' => $obj2->hash,
+                        'ts'   => (int) $obj2->ts,
+                    );
+                }
+            }
+        }
+
+        if (empty($records)) {
+            // No hay registros previos en la serie → primera factura / primer registro
+            return '';
+        }
+
+        // Ordenar por timestamp descendente y devolver el más reciente
+        usort($records, function ($a, $b) {
+            if ($a['ts'] == $b['ts']) return 0;
+            return ($a['ts'] < $b['ts']) ? 1 : -1;
+        });
+
+        return $records[0]['hash'];
+    }
     public function runTrigger($action, $object, User $user, Translate $langs, Conf $conf)
     {
         if (!isModEnabled('verifactu104')) return 0;
@@ -86,25 +155,10 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 // -----------------------------
                 // 1) Recuperar hash previo (última factura con hash_verifactu)
                 // -----------------------------
-                $serie = preg_replace('/[^A-Za-z]/', '', (string) $object->ref);
-
-                $sqlprev = "
-                    SELECT t.options_hash_verifactu AS hash_verifactu
-                    FROM " . MAIN_DB_PREFIX . "facture_extrafields t
-                    INNER JOIN " . MAIN_DB_PREFIX . "facture f ON f.rowid = t.fk_object
-                    WHERE t.options_hash_verifactu IS NOT NULL
-                    AND t.options_hash_verifactu <> ''
-                    AND t.options_verifactu_estado = 'enviado'
-                    AND f.ref LIKE '" . $this->db->escape($serie) . "%'
-                    ORDER BY t.options_verifactu_timestamp DESC
-                    LIMIT 1
-                ";
-
-                $resprev   = $this->db->query($sqlprev);
-                $hash_prev = "";
-                if ($resprev && $objprev = $this->db->fetch_object($resprev)) {
-                    $hash_prev = $objprev->hash_verifactu;
-                }
+                                // -----------------------------
+                // 1) Recuperar hash previo (último registro de la serie con huella)
+                // -----------------------------
+                $hash_prev = $this->getLastHashForSerie($object);
 
                 // -----------------------------
                 // 2) Cadena OFICIAL AEAT para la huella
@@ -176,20 +230,25 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 dol_syslog("VERIFACTU: Generando anulación para factura " . $object->ref);
 
                 require_once DOL_DOCUMENT_ROOT . '/custom/verifactu104/class/VerifactuXMLBuilder.class.php';
+                require_once DOL_DOCUMENT_ROOT . '/custom/verifactu104/class/actions_verifactu104.class.php';
 
                 $facture = new Facture($this->db);
                 $facture->fetch($object->id);
                 $facture->fetch_thirdparty();
                 $facture->fetch_optionals();
 
-                $hash_prev = $facture->array_options['options_hash_prev'] ?? '';
+                // Hash previo: último registro de la serie (alta / subsanación / anulación previa)
+                $hash_prev = $this->getLastHashForSerie($object);
 
                 $builder = new VerifactuXMLBuilder($this->db, $conf);
 
+                $timestamp = dol_now();
+
+                // Generar XML de anulación (RegistroAnulacion)
                 $xml = $builder->buildRegistroAnulacion(
                     $facture,
                     $hash_prev,
-                    dol_now()
+                    $timestamp
                 );
 
                 $dir = $conf->facture->dir_output . "/" . $object->ref;
@@ -200,46 +259,21 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
 
                 verifactu_add_history($object, 'SIF_XML_ANU', "XML de anulación generado: " . basename($xml_path));
 
-                $facture->updateExtraField('verifactu_estado', 'anulado');
+                // Enviar automáticamente a la AEAT
+                $actions = new ActionsVerifactu104($this->db);
+                $resSend = $actions->sendToAEAT($xml_path, $facture);
+
+                if ($resSend) {
+                    $facture->updateExtraField('verifactu_estado', 'anulado_enviado');
+                    verifactu_add_history($object, 'SIF_ANU_ENV', 'Anulación enviada a AEAT correctamente.');
+                } else {
+                    // Si falla el envío, dejamos estado solo como anulado
+                    $facture->updateExtraField('verifactu_estado', 'anulado_error_envio');
+                    verifactu_add_history($object, 'SIF_ANU_ERR', 'Error al enviar anulación a AEAT.');
+                }
 
                 return 1;
-            case 'VERIFACTU_SUBSANACION':
-                dol_syslog("VERIFACTU: Generando subsanación para factura " . $object->ref);
-
-                require_once DOL_DOCUMENT_ROOT . '/custom/verifactu104/class/VerifactuXMLBuilder.class.php';
-
-                $facture = new Facture($this->db);
-                $facture->fetch($object->id);
-                $facture->fetch_thirdparty();
-                $facture->fetch_optionals();
-
-                // Hash actual y previo
-                $hash_actual = $facture->array_options['options_hash_verifactu'] ?? '';
-                $hash_prev   = $facture->array_options['options_hash_prev'] ?? '';
-
-                $builder = new VerifactuXMLBuilder($this->db, $conf);
-
-                // Build XML de subsanación
-                $xml = $builder->buildRegistroAlta(
-                    $facture,
-                    $hash_prev,
-                    $hash_actual,
-                    dol_now(),
-                    true    // 🚀 subsanación
-                );
-
-                // Guardar archivo
-                $dir = $conf->facture->dir_output . "/" . $object->ref;
-                dol_mkdir($dir);
-                $xml_path = $dir . "/verifactu_subsanacion.xml";
-                file_put_contents($xml_path, $xml);
-
-                verifactu_add_history($object, 'SIF_XML_SUB', "XML subsanación generado: " . basename($xml_path));
-
-                // Marcar estado
-                $facture->updateExtraField('verifactu_estado', 'subsanacion');
-
-                return 1;
+          
 
             default:
                 return 0;
