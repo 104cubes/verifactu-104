@@ -311,8 +311,21 @@ class modVerifactu104 extends DolibarrModules
 
 
 		// Main menu entries to add
-		$this->menu = array();
-		$r = 0;
+		$this->menu[$r++] = array(
+			'fk_menu' => '',
+			'type' => 'top',
+			'titre' => 'VeriFactu',
+			'mainmenu' => 'verifactu104',
+			'leftmenu' => 'verifactu104_menu',
+			'url' => '/verifactu104/admin/setup.php',
+			'langs' => 'verifactu104@verifactu104',
+			'position' => 100,
+			'enabled' => 'isModEnabled("verifactu104")',
+			'perms' => '1',
+			'target' => '',
+			'user' => 2
+		);
+
 		// Add here entries to declare new menus
 		// SIN TOP MENU
 
@@ -451,9 +464,9 @@ class modVerifactu104 extends DolibarrModules
 		// Add hash_verifactu column to llx_facture if it does not exist
 		// Add missing columns to llx_facture if they do not exist
 		// Create extrafields during init
-		include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+		include_once DOL_DOCUMENT_ROOT . '/core/class/extrafields.class.php';
 		$extrafields = new ExtraFields($this->db);
-		
+
 		$langfile = 'verifactu104@verifactu104'; // Tu fichero de idioma
 		$condition = 'isModEnabled("verifactu104")'; // Condición para mostrar
 
@@ -461,47 +474,167 @@ class modVerifactu104 extends DolibarrModules
 		// Parámetros clave: 'hash_verifactu' (nombre), 'Verifactu Hash' (etiqueta), 'varchar' (tipo), 'invoice' (elemento)
 		// El '0' en el quinto parámetro (visible) lo oculta de la interfaz de usuario, ya que es un campo técnico.
 		$extrafields->addExtraField(
-			'hash_verifactu', 
-			"Verifactu Hash", 
-			'varchar', 
-			1, 
-			255, 
-			'facture', 
-			0, 
-			0, 
-			'', 
-			'', 
-			1, 
-			'', 
+			'hash_verifactu',
+			"Verifactu Hash",
+			'varchar',
+			1,
+			255,
+			'facture',
+			0,
+			0,
+			'',
+			'',
+			1,
+			'',
 			0, // Posición (0 = invisible)
-			0, 
-			'', 
-			'', 
-			$langfile, 
+			0,
+			'',
+			'',
+			$langfile,
+			$condition
+		);
+		// 1.b Añadir campo para timestamp del registro VeriFactu
+		$extrafields->addExtraField(
+			'verifactu_timestamp',      // Nombre del extrafield
+			"Verifactu Timestamp",      // Etiqueta
+			'int',                      // Tipo: entero (UNIX timestamp)
+			2,                          // Orden del extrafield
+			10,                         // Tamaño (10 dígitos para timestamp)
+			'facture',                  // Objeto donde se crea el extrafield
+			0,                          // Entidad
+			0,                          // Help
+			'',                         // Default
+			'',                         // Params
+			1,                          // Visible (puede ser 0 si quieres ocultarlo)
+			'',                         // Perms
+			0,                          // Posición
+			0,                          // Always displayed
+			'',                         // Unique
+			'',                         // Required
+			$langfile,                  // Archivo de idioma
+			$condition                  // Condición para mostrarse
+		);
+		// 2. Añadir campo para el hash previo (si lo necesitas guardar también)
+		$extrafields->addExtraField(
+			'hash_prev',
+			"Verifactu Hash Anterior",
+			'varchar',
+			1,
+			255,
+			'facture',
+			0,
+			0,
+			'',
+			'',
+			1,
+			'',
+			0, // Posición (0 = invisible)
+			0,
+			'',
+			'',
+			$langfile,
+			$condition
+		);
+		// 3. Añadir campo para el estado de la factura en Verifactu
+		$extrafields->addExtraField(
+			'verifactu_estado',               // Nombre técnico
+			"Verifactu Estado",               // Etiqueta visible
+			'select',                         // Tipo
+			2,                                // Orden de aparición
+			'',                               // Tamaño (no aplica a select)
+			'facture',                        // Objeto: facturas
+			0,                                // Entidad (0 = todas)
+			0,                                // Help
+			'',                               // Default
+			'',                               // Param
+			1,                                // Visible
+			'',                               // Perms
+			0,                                // Posición
+			0,                                // Always displayed
+			'',                               // Unique
+			'',                               // Required
+			$langfile,                        // Archivo de idioma
+			$condition,                       // Condición opcional
+			array(
+				'options' => array(
+					'pendiente'   => 'Pendiente',
+					'enviado'     => 'Enviado',
+					'rechazado'   => 'Rechazado',
+					'error'       => 'Error Técnico',
+					'reintentar'  => 'Pendiente de Reintento',
+					'subsanacion' => 'Subsanación',
+					'anulado'     => 'Anulado'
+				),
+				'readonly' => 1                // 🔒 Solo lectura
+			)
+		);
+
+		$extrafields->addExtraField(
+			'verifactu_event_hash',
+			"Verifactu Event Hash",
+			'varchar',
+			1,
+			255,
+			'actioncomm',
+			0,
+			0,
+			'',
+			'',
+			1,
+			'',
+			0,
+			0,
+			'',
+			'',
+			$langfile,
+			$condition
+		);
+		$extrafields->addExtraField(
+			'verifactu_event_timestamp',
+			"Verifactu Event Timestamp",
+			'int',
+			2,
+			10,
+			'actioncomm',
+			0,
+			0,
+			'',
+			'',
+			1,
+			'',
+			0,
+			0,
+			'',
+			'',
+			$langfile,
+			$condition
+		);
+		$extrafields->addExtraField(
+			'verifactu_event_tipo',
+			"Verifactu Event Tipo",
+			'select',
+			3,
+			'',
+			'actioncomm',
+			0,
+			0,
+			'',
+			array('options' => array(
+				'alta' => 'Alta',
+				'subsanacion' => 'Subsanación',
+				'anulacion' => 'Anulación'
+			)),
+			1,
+			'',
+			0,
+			0,
+			'',
+			'',
+			$langfile,
 			$condition
 		);
 
-		// 2. Añadir campo para el hash previo (si lo necesitas guardar también)
-		$extrafields->addExtraField(
-			'hash_prev', 
-			"Verifactu Hash Anterior", 
-			'varchar', 
-			1, 
-			255, 
-			'facture', 
-			0, 
-			0, 
-			'', 
-			'', 
-			1, 
-			'', 
-			0, // Posición (0 = invisible)
-			0, 
-			'', 
-			'', 
-			$langfile, 
-			$condition
-		);
+
 		// Create tables of module at module activation
 		//$result = $this->_load_tables('/install/mysql/', 'verifactu104');
 		$result = $this->_load_tables('/verifactu104/sql/');
