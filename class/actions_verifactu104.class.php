@@ -18,6 +18,80 @@ class ActionsVerifactu104 extends CommonHookActions
         $this->db = $db;
     }
 
+    public function doActions($parameters, &$object, &$action, $hookmanager) {
+        if ($action == 'verifactu_send') {
+            return $this->actionEnviarAEAT($object);
+        }
+        if ($action == 'verifactu_subsanar') {
+            return $this->actionSubsanarAEAT($object);
+        }
+        return 0;
+    }
+
+    private function getHashPrev($object) {
+        global $db;
+        $serie = preg_replace('/[^A-Za-z]/','', $object->ref);
+        $sql = "SELECT ef.options_hash_verifactu as hash, ef.options_verifactu_timestamp as ts
+                FROM ".MAIN_DB_PREFIX."facture_extrafields ef
+                JOIN ".MAIN_DB_PREFIX."facture f ON f.rowid=ef.fk_object
+                WHERE f.ref LIKE '".$db->escape($serie)."%' AND ef.options_hash_verifactu IS NOT NULL";
+        $res = $db->query($sql);
+        $records = [];
+        while ($obj = $db->fetch_object($res)) {
+            $records[] = ['hash'=>$obj->hash, 'ts'=>(int)$obj->ts];
+        }
+        $sql2="SELECT ace.verifactu_event_hash as hash, ace.verifactu_event_timestamp as ts
+               FROM ".MAIN_DB_PREFIX."actioncomm ac
+               JOIN ".MAIN_DB_PREFIX."actioncomm_extrafields ace ON ac.id=ace.fk_object
+               WHERE ac.elementtype='facture'
+               AND ac.fk_element IN (
+                    SELECT f2.rowid FROM ".MAIN_DB_PREFIX."facture f2
+                    WHERE f2.ref LIKE '".$db->escape($serie)."%'
+               )";
+        $res2 = $db->query($sql2);
+        while ($o=$db->fetch_object($res2)) {
+            $records[]=['hash'=>$o->hash, 'ts'=>(int)$o->ts];
+        }
+        usort($records,function($a,$b){return $b['ts']<$a['ts']?1:-1;});
+        return $records[0]['hash'] ?? '';
+    }
+
+    private function registerEvent($object,$tipo,$hash_actual,$hash_prev,$timestamp){
+        global $db;
+        require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
+        $ev=new ActionComm($db);
+        $ev->elementtype='facture';
+        $ev->fk_element=$object->id;
+        $ev->code='VERIFACTU_EVENT';
+        $ev->label='Evento VeriFactu '.$tipo;
+        $ev->datep=dol_now();
+        $ev->note='Evento '.$tipo;
+        global $user;
+        $ev->create($user);
+        $db->query("UPDATE ".MAIN_DB_PREFIX."actioncomm_extrafields
+                    SET verifactu_event_hash='".$db->escape($hash_actual)."',
+                        verifactu_event_hash_prev='".$db->escape($hash_prev)."',
+                        verifactu_event_timestamp=".(int)$timestamp.",
+                        verifactu_event_tipo='".$db->escape($tipo)."'
+                    WHERE fk_object=".(int)$ev->id);
+    }
+
+    private function actionSubsanarAEAT($object){
+        global $conf;
+        require_once DOL_DOCUMENT_ROOT.'/custom/verifactu104/class/VerifactuXMLBuilder.class.php';
+        $object->fetch_thirdparty();
+        $object->fetch_optionals();
+        $hash_prev=$this->getHashPrev($object);
+        $hash_actual=hash('sha256',uniqid('vf',true));
+        $timestamp=dol_now();
+        $this->registerEvent($object,'subsanacion',$hash_actual,$hash_prev,$timestamp);
+        $ref=dol_sanitizeFileName($object->ref);
+        $xml_path=$conf->facture->dir_output."/".$ref."/subsanacion_".$ref.".xml";
+        $builder=new VerifactuXMLBuilder($this->db,$conf);
+        $builder->buildAltaSoapAndSave($object,$hash_prev,$hash_actual,$timestamp,$xml_path,true);
+        return $this->sendToAEAT($xml_path,$object);
+    }
+
     // Método que envía el XML a la AEAT
     public function sendToAEAT($xml_path, $object)
     {
@@ -34,48 +108,10 @@ class ActionsVerifactu104 extends CommonHookActions
             dol_syslog("VERIFACTU_SEND: Envío automático desactivado", LOG_INFO);
             return 0;
         }
-        // --- ✅ 1️⃣ Comprobación del estado de la factura anterior ---
-        $sql = "SELECT f.rowid, f.ref, ef.verifactu_estado 
-            FROM " . MAIN_DB_PREFIX . "facture AS f
-            INNER JOIN " . MAIN_DB_PREFIX . "facture_extrafields AS ef ON ef.fk_object = f.rowid
-            WHERE f.rowid < " . (int)$object->id . "
-            ORDER BY f.rowid DESC
-            LIMIT 1";
-
-        $resql = $db->query($sql);
-        $prev_enviado = true;
-
-        if ($resql && $db->num_rows($resql) > 0) {
-            $prev = $db->fetch_object($resql);
-            if ($prev->verifactu_estado != 'enviado') {
-                $prev_enviado = false;
-                dol_syslog("VERIFACTU_SEND: La factura anterior ($prev->ref) no está enviada, se usará RequerimientoSOAP.", LOG_WARNING);
-
-                if (method_exists($object, 'updateExtraField')) {
-                    $object->updateExtraField('verifactu_estado', 'pendiente');
-                }
-            }
-        }
-        // --- Determinar endpoint según hash y estado de la factura anterior ---
-        $prev_hash = '';
-        $prev_estado = '';
-
-        $sql2 = "SELECT ef.options_hash_verifactu AS hash_verifactu, ef.verifactu_estado
-                 FROM " . MAIN_DB_PREFIX . "facture_extrafields AS ef
-                 WHERE ef.fk_object = (
-                     SELECT MAX(f.rowid) 
-                     FROM " . MAIN_DB_PREFIX . "facture AS f
-                     WHERE f.rowid < " . (int)$object->id . "
-                 )";
-
-        $res2 = $db->query($sql2);
-        if ($res2 && $db->num_rows($res2) > 0) {
-            $o = $db->fetch_object($res2);
-            $prev_hash = trim($o->hash_verifactu);
-            $prev_estado = trim($o->verifactu_estado);
-        }
-
-        $is_first_or_not_sent = empty($prev_hash) || $prev_estado !== 'enviado';
+        // Determinar endpoint según hash y estado de la factura anterior ---
+        // Nueva lógica simplificada — se basa únicamente en el último hash generado de la serie
+        $hash_prev_global = $this->getHashPrev($object);
+        $is_first_or_not_sent = empty($hash_prev_global);
 
         if ($conf->global->VERIFACTU_MODE == 'test') {
             $base = 'https://prewww1.aeat.es/wlpl/TIKE-CONT/ws/SistemaFacturacion/';
@@ -345,8 +381,7 @@ class ActionsVerifactu104 extends CommonHookActions
 
         verifactu_add_history($object, 'SIF_XML', 'XML generado (builder): ' . basename($xml_path));
         dol_syslog("VERIFACTU_HOOK: XML VeriFactu SOAP generado con builder en $xml_path", LOG_DEBUG);
-        dol_syslog("VERIFACTU_HOOK: XML VeriFactu SOAP completo generado en $xml_path", LOG_DEBUG);
-        /* Envío automático a AEAT si está habilitado
+         /* Envío automático a AEAT si está habilitado
         if (!empty($conf->global->VERIFACTU_AUTO_SEND) && in_array($conf->global->VERIFACTU_MODE, ['test', 'prod'])) {
             $this->sendToAEAT($xml_path, $object);
         }*/
@@ -391,6 +426,27 @@ if (strpos($_SERVER["PHP_SELF"], '/compta/facture/card.php') !== false) {
         @keyframes spin {0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }}\
         </style>";
         $("head").append(style);
+                // === Botones VeriFactu: Enviar / Subsanar ===
+        var factureId = new URL(window.location.href).searchParams.get("id");
+
+        var tabs = $(".tabsAction");
+        if (tabs.length > 0 && factureId) {
+            var btnEnviar = $("<a>", {
+                class: "butAction",
+                text: "Enviar a AEAT",
+                href: window.location.pathname + "?id=" + factureId + "&action=verifactu_send"
+            });
+
+            var btnSubsanar = $("<a>", {
+                class: "butAction",
+                text: "Subsanar y reenviar",
+                href: window.location.pathname + "?id=" + factureId + "&action=verifactu_subsanar"
+            });
+
+            tabs.append(btnEnviar);
+            tabs.append(btnSubsanar);
+        }
+
 
     });
     </script>';
