@@ -88,14 +88,17 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 // -----------------------------
                 $serie = preg_replace('/[^A-Za-z]/', '', (string) $object->ref);
 
-                $sqlprev = "SELECT t.hash_verifactu
+                $sqlprev = "
+                    SELECT t.options_hash_verifactu AS hash_verifactu
                     FROM " . MAIN_DB_PREFIX . "facture_extrafields t
                     INNER JOIN " . MAIN_DB_PREFIX . "facture f ON f.rowid = t.fk_object
-                    WHERE t.hash_verifactu IS NOT NULL
-                    AND f.fk_statut = 1
+                    WHERE t.options_hash_verifactu IS NOT NULL
+                    AND t.options_hash_verifactu <> ''
+                    AND t.options_verifactu_estado = 'enviado'
                     AND f.ref LIKE '" . $this->db->escape($serie) . "%'
-                    ORDER BY f.date_validation DESC, f.rowid DESC
-                    LIMIT 1";
+                    ORDER BY t.options_verifactu_timestamp DESC
+                    LIMIT 1
+                ";
 
                 $resprev   = $this->db->query($sqlprev);
                 $hash_prev = "";
@@ -118,7 +121,7 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 $facture->fetch($object->id);
                 $facture->fetch_optionals();
                 $facture->updateExtraField('hash_verifactu', $hash_new);
-
+                $facture->updateExtraField('verifactu_timestamp', dol_now());
                 verifactu_add_history($object, 'SIF_HASH', 'Hash generado: ' . $hash_new);
                 // 4) QR — FORMATO OFICIAL AEAT (URL)
                 require_once dirname(__FILE__) . '/../../lib/phpqrcode.php';
@@ -169,6 +172,74 @@ class InterfaceVerifactu104Triggers extends DolibarrTriggers
                 // De momento, mantenemos el bloqueo duro:
                 setEventMessages("No se puede pasar a borrador una factura enviada a la AEAT.", null, 'errors');
                 return -1;
+            case 'BILL_CANCEL':
+                dol_syslog("VERIFACTU: Generando anulación para factura " . $object->ref);
+
+                require_once DOL_DOCUMENT_ROOT . '/custom/verifactu104/class/VerifactuXMLBuilder.class.php';
+
+                $facture = new Facture($this->db);
+                $facture->fetch($object->id);
+                $facture->fetch_thirdparty();
+                $facture->fetch_optionals();
+
+                $hash_prev = $facture->array_options['options_hash_prev'] ?? '';
+
+                $builder = new VerifactuXMLBuilder($this->db, $conf);
+
+                $xml = $builder->buildRegistroAnulacion(
+                    $facture,
+                    $hash_prev,
+                    dol_now()
+                );
+
+                $dir = $conf->facture->dir_output . "/" . $object->ref;
+                dol_mkdir($dir);
+                $xml_path = $dir . "/verifactu_anulacion.xml";
+
+                file_put_contents($xml_path, $xml);
+
+                verifactu_add_history($object, 'SIF_XML_ANU', "XML de anulación generado: " . basename($xml_path));
+
+                $facture->updateExtraField('verifactu_estado', 'anulado');
+
+                return 1;
+            case 'VERIFACTU_SUBSANACION':
+                dol_syslog("VERIFACTU: Generando subsanación para factura " . $object->ref);
+
+                require_once DOL_DOCUMENT_ROOT . '/custom/verifactu104/class/VerifactuXMLBuilder.class.php';
+
+                $facture = new Facture($this->db);
+                $facture->fetch($object->id);
+                $facture->fetch_thirdparty();
+                $facture->fetch_optionals();
+
+                // Hash actual y previo
+                $hash_actual = $facture->array_options['options_hash_verifactu'] ?? '';
+                $hash_prev   = $facture->array_options['options_hash_prev'] ?? '';
+
+                $builder = new VerifactuXMLBuilder($this->db, $conf);
+
+                // Build XML de subsanación
+                $xml = $builder->buildRegistroAlta(
+                    $facture,
+                    $hash_prev,
+                    $hash_actual,
+                    dol_now(),
+                    true    // 🚀 subsanación
+                );
+
+                // Guardar archivo
+                $dir = $conf->facture->dir_output . "/" . $object->ref;
+                dol_mkdir($dir);
+                $xml_path = $dir . "/verifactu_subsanacion.xml";
+                file_put_contents($xml_path, $xml);
+
+                verifactu_add_history($object, 'SIF_XML_SUB', "XML subsanación generado: " . basename($xml_path));
+
+                // Marcar estado
+                $facture->updateExtraField('verifactu_estado', 'subsanacion');
+
+                return 1;
 
             default:
                 return 0;
