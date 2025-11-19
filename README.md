@@ -24,7 +24,7 @@ Este módulo tiene las funcionallidades para cumplircon la **integridad, trazabi
 - XML conforme al esquema RSIF (AEAT)  
 - Registro de acciones  
 - Bloqueo y control de modificaciones  
-- Página certificada adicional en el PDF  
+- Página adicional en el PDF  
 - Conservación de toda la evidencia digital en el directorio de cada factura  
 
 
@@ -67,7 +67,7 @@ Compatible con cualquier modelo de factura de dolibarr, incluso personalizados.
 Cada factura genera un XML conforme al esquema oficial (`SuministroLR.xsd`).  
 Se guarda en el directorio de documentos de la factura junto al PDF y el QR.
 
-Este XML es **válido para sistemas VeriFactu** si el usuario desea implementar posteriormente una comunicación con la AEAT.
+XML es **válido para VeriFactu**
 
 ### ✔ 5. Registro de acciones RSIF
 El módulo documenta eventos internos asociados a:
@@ -75,7 +75,8 @@ El módulo documenta eventos internos asociados a:
 - Validación  
 - Cálculo de hash  
 - Generación de QR  
-- Generación de XML  
+- Generación de XML
+- Registro de altas de factura, subsanación, anulación, rectificativas, reintentos.
 - Cualquier operación crítica RSIF  
 
 ### ✔ 6. Control de integridad y bloqueo
