@@ -2,6 +2,9 @@
 
 ### APROXIMACIÓN al Cumplimiento con Ley antifraude. Reglamento RSIF — Compatible con VeriFactu.
 
+*Pendiente:
+- xml condicionado a anulación o rectificativa - > Archivo class xmlBuilder
+
 
 #### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable del cumplimiento vía certificado accesible desde el software.. ####
 
