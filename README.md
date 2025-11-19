@@ -34,7 +34,6 @@ Este módulo tiene las funcionallidades para cumplircon la **integridad, trazabi
 
 Este módulo permite al usuario cumplir:
 
-### ✔ La obligación RSIF (obligatoria para todas las empresas)
 - Registro encadenado  
 - XML RSIF  
 - Hash y QR  
