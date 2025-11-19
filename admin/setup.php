@@ -65,40 +65,50 @@ if ($action == 'save') {
 	// PROCESAR P12 → cert.pem + key.pem + ca-bundle.crt
 	// ---------------------------------------------
 	if (!empty($_FILES['cert_p12']['tmp_name'])) {
+
 		$p12_tmp = $_FILES['cert_p12']['tmp_name'];
 		$p12_pass = GETPOST("cert_p12_pass", "alphanohtml");
 
-		echo "<pre>📌 Archivo P12 recibido: {$_FILES['cert_p12']['name']}</pre>";
+		setEventMessages("Archivo P12 recibido: " . $_FILES['cert_p12']['name'], null, 'mesgs');
 
 		// No guardar contraseña, solo usarla en memoria
 		if (empty($p12_pass)) {
-			echo "<pre>❌ Debes introducir la contraseña del archivo P12.</pre>";
+			setEventMessages("Debes introducir la contraseña del archivo P12.", null, 'errors');
 		} else {
 			$p12_content = file_get_contents($p12_tmp);
 			$certs = [];
 
+			// Intentar leer el P12
 			if (!openssl_pkcs12_read($p12_content, $certs, $p12_pass)) {
-				echo "<pre>❌ No se pudo descifrar el archivo P12. Contraseña incorrecta o archivo inválido.</pre>";
+
+				$msg = "Error al procesar el archivo P12. ";
+
+				// Capturar errores internos de OpenSSL
+				while ($err = openssl_error_string()) {
+					$msg .= "<br>🔍 OpenSSL: " . $err;
+				}
+
+				setEventMessages($msg, null, 'errors');
 			} else {
 				// Guardar CERT
 				if (!empty($certs['cert'])) {
 					file_put_contents($upload_dir . "cert.pem", $certs['cert']);
-					echo "<pre>✔️ cert.pem generado</pre>";
+					setEventMessages("cert.pem generado correctamente", null, 'mesgs');
 				}
 
 				// Guardar KEY
 				if (!empty($certs['pkey'])) {
 					file_put_contents($upload_dir . "key.pem", $certs['pkey']);
-					echo "<pre>✔️ key.pem generado</pre>";
+					setEventMessages("key.pem generado correctamente", null, 'mesgs');
 				}
 
 				// Guardar CA si existe
 				if (!empty($certs['extracerts'])) {
 					// Si hay varias, las concatenamos
 					file_put_contents($upload_dir . "ca-bundle.crt", implode("\n", $certs['extracerts']));
-					echo "<pre>✔️ ca-bundle.crt generado</pre>";
+					setEventMessages("ca-bundle.crt generado correctamente", null, 'mesgs');
 				} else {
-					echo "<pre>⚠️ No se encontraron certificados CA en el P12.</pre>";
+					setEventMessages("No se encontraron certificados CA en el P12.", null, 'warnings');
 				}
 			}
 		}
@@ -122,7 +132,10 @@ No actives el modo “Producción” sin haber desarrollado y validado ese méto
 // Inicio formulario
 print '<form method="POST" enctype="multipart/form-data">';
 print '<input type="hidden" name="token" value="' . newToken() . '">';
-print '<input type="hidden" name="action" value="save">';
+print '<input type="hidden" name="action" value="save">
+<input type="hidden" name="MAX_FILE_SIZE" value="52428800">
+	';
+
 
 // --- Parámetros de configuración ---
 print '<table class="noborder" width="100%">';
