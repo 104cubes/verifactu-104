@@ -174,7 +174,6 @@ class ActionsVerifactu104 extends CommonHookActions
 
     // Método que envía el XML a la AEAT
 
-    // Método que envía el XML a la AEAT
     public function sendToAEAT($xml_path, $object)
     {
         global $conf, $db;
@@ -440,6 +439,7 @@ class ActionsVerifactu104 extends CommonHookActions
             dol_syslog("TRACE: " . $e->getTraceAsString(), LOG_ERR);
             return -1;
         }
+        $qr_file = $facture_dir . "/verifactu_qr.png";
         dol_mkdir($facture_dir);
         // Buscar PDF real
         if (empty($pdf_file) || !file_exists($pdf_file)) {
@@ -452,42 +452,46 @@ class ActionsVerifactu104 extends CommonHookActions
                 return 0;
             }
         }
-        // Ruta del QR
-        $qr_file = $facture_dir . "/verifactu_qr.png";
-        if (!file_exists($pdf_file)) {
-            dol_syslog("VERIFACTU_HOOK: Falta PDF o QR → NO SE INSERTA", LOG_DEBUG);
-            return 0;
-        }
         try {
             // Cargar FPDI
             require_once DOL_DOCUMENT_ROOT . '/custom/verifactu104/lib/FPDI/src/autoload.php';
+
             $newpdf = new Fpdi();
             $pagecount = $newpdf->setSourceFile($pdf_file);
+
             for ($i = 1; $i <= $pagecount; $i++) {
                 $tpl = $newpdf->importPage($i);
                 $size = $newpdf->getTemplateSize($tpl);
                 $newpdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
                 $newpdf->useTemplate($tpl);
             }
+
             // Nueva página certificada
             $newpdf->AddPage('P', 'A4');
             $newpdf->SetMargins(20, 20, 20);
+
             // Título centrado
             $newpdf->SetFont('Helvetica', 'B', 14);
             $newpdf->Ln(5);
             $newpdf->Cell(0, 10, 'Certificación de Integridad de Factura (Veri*Factu)', 0, 1, 'C');
+
             $newpdf->SetLineWidth(0.3);
             $newpdf->Line(20, $newpdf->GetY(), 190, $newpdf->GetY());
             $newpdf->Ln(8);
+
             // QR centrado
             $newpdf->Image($qr_file, 80, $newpdf->GetY(), 50, 50, 'PNG');
             $newpdf->Ln(60);
-            $sql = "SELECT hash_verifactu FROM " . MAIN_DB_PREFIX . "facture_extrafields WHERE fk_object = " . ((int)$object->id);
+
+            // Hash
+            $sql = "SELECT hash_verifactu FROM llx_facture_extrafields WHERE fk_object = ?";
             $resql = $this->db->query($sql);
             $hash_val = ($resql && $obj = $this->db->fetch_object($resql)) ? $obj->hash_verifactu : '';
+
             $newpdf->SetFont('Helvetica', '', 10);
             $newpdf->MultiCell(0, 6, "Hash criptográfico (SHA256):\n" . $hash_val, 0, 'L');
             $newpdf->Ln(5);
+
             $newpdf->MultiCell(
                 0,
                 6,
@@ -496,16 +500,21 @@ class ActionsVerifactu104 extends CommonHookActions
                 0,
                 'L'
             );
+
             $newpdf->Ln(10);
             $newpdf->SetFont('Helvetica', 'I', 9);
             $newpdf->Cell(0, 5, 'Documento generado automáticamente.', 0, 1, 'C');
+
             // Guardar PDF final
             $newpdf->Output($pdf_file, 'F');
+
             dol_syslog("VERIFACTU_HOOK: PDF actualizado correctamente", LOG_DEBUG);
         } catch (Exception $e) {
             dol_syslog("VERIFACTU_HOOK: ERROR FPDI → " . $e->getMessage(), LOG_ERR);
             return -1;
         }
+
+
         // === GENERAR XML VERIFACTU (usando VerifactuXMLBuilder) ===
         dol_syslog("VERIFACTU_HOOK: INICIO generación XML VeriFactu", LOG_DEBUG);
         try {
@@ -580,7 +589,7 @@ class ActionsVerifactu104 extends CommonHookActions
             $total_fmt   = number_format((float) $object->total_ttc, 2, '.', '');
             // Seleccionar URL
             $mode = $conf->global->VERIFACTU_MODE ?? '';
-            if (in_array($mode, ['test', 'prod'], true)) {
+            if (in_array($mode, ['test', 'pruebas', 'prod', 'produccion', 'producción'], true)) {
                 $qr_url_base = "https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQR";
             } else {
                 $qr_url_base = "https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQRNoVerifactu";
@@ -594,8 +603,11 @@ class ActionsVerifactu104 extends CommonHookActions
                 . "&hash=" . urlencode($hash_actual);
             // Guardar QR
             dol_mkdir($facture_dir);
-            $qr_file = $facture_dir . "/verifactu_qr.png";
+
             QRcode::png($qr_content, $qr_file, QR_ECLEVEL_M, 4);
+            clearstatcache(true, $qr_file);
+            dol_syslog("VF_QR: PNG creado SIZE=" . @filesize($qr_file), LOG_DEBUG);
+
             // Detectar el tipo de factura para AEAT
             $tipoFacturaAeat = 'F1';
             if (!empty($object->type) && (int)$object->type === Facture::TYPE_CREDIT_NOTE) {
