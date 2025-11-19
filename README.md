@@ -132,5 +132,4 @@ Deben ser de un certificado de sello digital.
 
 # 📣 Comentarios y soporte
 
-Puedes dejar tus dudas o comentarios en este post:  
-https://www.linkedin.com/posts/104-cubes_m%C3%B3dulo-dolibarr-verifactu-para-sl-gratuito-activity-7393888340925812736-9Kjr
+Puedes dejar tus dudas en el espacio de discusion
