@@ -12,7 +12,7 @@
 
 # 📌 Descripción general
 
-**Verifactu 104** es un módulo desarrollado por **104 CUBES S.L.** para **Dolibarr ERP/CRM**, que implementa las funcionalidades para cumplir los requisitos técnicos del **RSIF** derivados del Real Decreto 1007/2023 con compatibilidad con exigencias de VERI*FACTU.
+**Verifactu 104** es un módulo desarrollado por **104 CUBES.** para **Dolibarr ERP/CRM**, que implementa las funcionalidades para cumplir los requisitos técnicos del **RSIF** derivados del Real Decreto 1007/2023 con compatibilidad con exigencias de VERI*FACTU.
 
 Este módulo garantiza la **integridad, trazabilidad e inalterabilidad** de cada factura, mediante:
 
