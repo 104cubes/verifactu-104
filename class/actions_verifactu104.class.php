@@ -480,11 +480,11 @@ class ActionsVerifactu104 extends CommonHookActions
             $newpdf->Ln(8);
 
             // QR centrado
-            $newpdf->Image($qr_file, 80, $newpdf->GetY(), 50, 50, 'PNG');
+            $newpdf->Image($qr_file, 80, $newpdf->GetY(), 50, 50, '', '', '', true);
             $newpdf->Ln(60);
 
             // Hash
-            $sql = "SELECT hash_verifactu FROM llx_facture_extrafields WHERE fk_object = ?";
+            $sql = "SELECT hash_verifactu FROM " . MAIN_DB_PREFIX . "facture WHERE rowid = " . (int)$object->id;
             $resql = $this->db->query($sql);
             $hash_val = ($resql && $obj = $this->db->fetch_object($resql)) ? $obj->hash_verifactu : '';
 
@@ -589,7 +589,7 @@ class ActionsVerifactu104 extends CommonHookActions
             $total_fmt   = number_format((float) $object->total_ttc, 2, '.', '');
             // Seleccionar URL
             $mode = $conf->global->VERIFACTU_MODE ?? '';
-            if (in_array($mode, ['test', 'pruebas', 'prod', 'produccion', 'producción'], true)) {
+            if (in_array($mode, ['test', 'prod'], true)) {
                 $qr_url_base = "https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQR";
             } else {
                 $qr_url_base = "https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQRNoVerifactu";
@@ -605,10 +605,38 @@ class ActionsVerifactu104 extends CommonHookActions
             dol_mkdir($facture_dir);
 
             QRcode::png($qr_content, $qr_file, QR_ECLEVEL_M, 4);
-            clearstatcache(true, $qr_file);
-            dol_syslog("VF_QR: PNG creado SIZE=" . @filesize($qr_file), LOG_DEBUG);
-
             // Detectar el tipo de factura para AEAT
+            dol_syslog("VF_QR: Convirtiendo PNG a JPG para FPDI", LOG_DEBUG);
+
+            if (function_exists('imagecreatefrompng')) {
+                $png = @imagecreatefrompng($qr_file);
+                if ($png !== false) {
+                    $jpg_file = $facture_dir . '/verifactu_qr.jpg';
+
+                    $width  = imagesx($png);
+                    $height = imagesy($png);
+
+                    $bg = imagecreatetruecolor($width, $height);
+                    $white = imagecolorallocate($bg, 255, 255, 255);
+                    imagefilledrectangle($bg, 0, 0, $width, $height, $white);
+
+                    imagecopy($bg, $png, 0, 0, 0, 0, $width, $height);
+
+                    if (imagejpeg($bg, $jpg_file, 95)) {
+                        dol_syslog("VF_QR: JPG creado correctamente en $jpg_file", LOG_DEBUG);
+                        $qr_file = $jpg_file;
+                    } else {
+                        dol_syslog("VF_QR: ERROR al escribir JPG → $jpg_file", LOG_ERR);
+                    }
+
+                    imagedestroy($bg);
+                    imagedestroy($png);
+                } else {
+                    dol_syslog("VF_QR: ERROR imagecreatefrompng devolvió false", LOG_ERR);
+                }
+            } else {
+                dol_syslog("VF_QR: ERROR GD no disponible → NO se puede convertir PNG a JPG", LOG_ERR);
+            }
             $tipoFacturaAeat = 'F1';
             if (!empty($object->type) && (int)$object->type === Facture::TYPE_CREDIT_NOTE) {
                 $tipoFacturaAeat = 'R1';
