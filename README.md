@@ -1,11 +1,11 @@
 # Módulo Dolibarr — Verifactu 104 (RSIF para S.L.)
+
 ### APROXIMACIÓN al Cumplimiento con Ley antifraude. Reglamento RSIF — Compatible con VeriFactu.
 
 
+#### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable del cumplimiento vía certificado accesible desde el software.. ####
 
-#### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable de este cumplimiento. Se decribe más abajo una forma de hacer la verificaciób. ####
-
-### 📌 Hasta ahora ningún desarrollador de módulo veri*factu para Dolybarr se hace responsable del cumplimiento de la normativa vía certificado del desarrollador del cumplimiento. Punto obligatorio para PYMES en la normativa sancionadora de la Ley Antifraude. Si usas un SIF, debe ser certificado por un desarrollador, si no, como PYME pagas 50.000 €. 
+#### 📌 Hasta ahora ningún desarrollador de módulo veri*factu para Dolybarr se hace responsable del cumplimiento de la normativa vía certificado del desarrollador del cumplimiento. Punto obligatorio para PYMES en la normativa sancionadora de la Ley Antifraude. Si usas un SIF, debe ser certificado por un desarrollador, si no, como PYME pagas 50.000 €. 
 
 
 ---
@@ -14,7 +14,7 @@
 
 **Verifactu 104** es un módulo desarrollado por **104 CUBES.** para **Dolibarr ERP/CRM**, que implementa las funcionalidades para cumplir los requisitos técnicos del **RSIF** derivados del Real Decreto 1007/2023 con compatibilidad con exigencias de VERI*FACTU.
 
-Este módulo garantiza la **integridad, trazabilidad e inalterabilidad** de cada factura, mediante:
+Este módulo tiene las funcionallidades para cumplircon la **integridad, trazabilidad e inalterabilidad** de cada registro mediante:
 
 - Hash encadenado  
 - Código QR regulado  
@@ -38,7 +38,7 @@ Este módulo permite al usuario cumplir:
 - Inalterabilidad  
 - Evidencia y trazabilidad  
 
-#### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable de este cumplimiento. Se decribe más abajo una forma de hacerlo. ####
+#### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable de este cumplimiento mediante certificación de cumplimiento ####
 
 ---
 
