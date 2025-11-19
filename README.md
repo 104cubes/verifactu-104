@@ -15,7 +15,7 @@ Puedes usar Word, si quieres.
 
 # 📌 Descripción general
 
-**Verifactu 104** es un módulo desarrollado por **104 CUBES S.L.** para **Dolibarr ERP/CRM**, que implementa íntegramente los requisitos técnicos del **RSIF** derivados del Real Decreto 1007/2023 con compatibilidad con exigencias de VERI*FACTU.
+**Verifactu 104** es un módulo desarrollado por **104 CUBES S.L.** para **Dolibarr ERP/CRM**, que implementa las funcionalidades para cumplir los requisitos técnicos del **RSIF** derivados del Real Decreto 1007/2023 con compatibilidad con exigencias de VERI*FACTU.
 
 Este módulo garantiza la **integridad, trazabilidad e inalterabilidad** de cada factura, mediante:
 
@@ -27,7 +27,6 @@ Este módulo garantiza la **integridad, trazabilidad e inalterabilidad** de cada
 - Página certificada adicional en el PDF  
 - Conservación de toda la evidencia digital en el directorio de cada factura  
 
-Con esto, cualquier instalación de Dolibarr equipada con este módulo **cumpliría la normativa obligatoria RSIF**, independientemente de que el usuario desee activar o no la modalidad **VeriFactu (envío inmediato a la AEAT)**.
 
 ---
 
@@ -63,7 +62,7 @@ Sin modificar ninguna plantilla PDF de Dolibarr, añade automáticamente una pá
 - Resumen esencial de la factura  
 - Evidencia de integridad criptográfica  
 
-Compatible con cualquier modelo PDF, incluso personalizados.
+Compatible con cualquier modelo de factura de dolibarr, incluso personalizados.
 
 ### ✔ 4. Generación del XML RSIF completo
 Cada factura genera un XML conforme al esquema oficial (`SuministroLR.xsd`).  
@@ -90,22 +89,18 @@ Esto evita romper la cadena de trazabilidad.
 
 ---
 
-# 🔌 ¿Envío a la AEAT? (VeriFactu)
+# 🔌 7 Envío a la AEAT (VeriFactu)
 
-NO está en este código.
-Este módulo incluye un panel de configuración donde el usuario puede activar o desactivar la funcionalidad relacionada con el modo VeriFactu. Contempla añadir el código con el método para el envío más adelante.
 
-#### Sin embargo:
+Este módulo incluye un panel de configuración donde el usuario puede activar o desactivar la funcionalidad relacionada con el modo VeriFactu. 
 
-- El XML generado **es válido** para ser enviado a la AEAT.  
-- La cadena de hashes cumple con la especificación RSIF y, por tanto, es **compatible con VeriFactu**.  
-- El usuario puede activar o añadir en cualquier momento un método de envío conforme a VeriFactu.  
-- El módulo incorpora punto de integración pensado para esa ampliación en el archivo class/actions...php.
-- Implementar el módulo te obliga a comprobar que cunmple todos los requisitos antes de usarlo en producción.
+El backend permite activar Verifactu en modo pruebas o producción. Para hacerlo solicta certificado .p12 y la contraseña (no se guarda, sólo e usa para extraer lo archivos .key y .pem.
+O añadir en un zip cerificados .key y .pem ya extraídos.
 
-Si deseas añadir el **envío automático** conforme al sistema VeriFactu,  
+Deben ser de un certificado de sello digital.
+
+  
 **podemos ayudarte a completar este módulo con dicha funcionalidad (sin cuotas mensuales o anuales)**.  
-La base RSIF ya está implementada y preparada para conectarse con los servicios de la AEAT cuando se necesite.
 
 ---
 
@@ -130,31 +125,6 @@ La base RSIF ya está implementada y preparada para conectarse con los servicios
 
 ---
 
-# ✔ Validación manual de XML desde el portal oficial de la AEAT
-
-Si deseas comprobar por tu cuenta que los XML generados por el módulo cumplen con el estándar RSIF, la AEAT dispone de un portal web de pruebas donde puedes **subir el XML manualmente** y obtener una validación inmediata.
-
-Acceso al portal de pruebas (PRE–Producción):
-
-https://preportal.aeat.es/PRE-Exteriores/Inicio/_menu_/VERI_FACTU___Sistemas_Informaticos_de_Facturacion/VERI_FACTU___Sistemas_Informaticos_de_Facturacion.html
-
-Para acceder, necesitarás:
-
-- Un **certificado cualificado de sello electrónico de entidad jurídica**  
-  (no sirve el certificado personal, ni el de administrador único, ni el certificado FNMT de representante).
-- Tener el certificado instalado en tu navegador o en tu gestor de certificados habitual.
-
-Entra en "Cliente de servicio web".
-
-Una vez dentro, podrás:
-
-1. Seleccionar el XML generado por el módulo para cualquier factura.
-2. Elegir el endpoint: /wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP
-3. Subirlo directamente al validador de la AEAT.  
-4. Ver la respuesta XML y ahí veras si supera la validación, si hay errores de formato o contenido, o si la estructura se ajusta a RSIF/VeriFactu.
-
-
-Si encuentras alguna discrepancia o necesitas ayuda interpretando el resultado de la validación, puedes abrir un comentario en la sección **Issues** del repositorio o comentarlo en el post de LinkedIn que se enlaza a continuación.
 
 #### ⚠️  Recuerda que es de obligado certificar el cumplimiento de la normativa so pena de grandes multas según artículo 201. bis de la Ley Antifraude. ####
 #### ⚠️  Quien instale y o utilice este módulo en producción debe verificar, certificar y hacerse responsable del cumplimiento de la normativa RSIF. ####
