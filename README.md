@@ -34,7 +34,7 @@ Este módulo tiene las funcionallidades para cumplircon la **integridad, trazabi
 Este módulo permite al usuario cumplir:
 
 - Registro encadenado  
-- XML RSIF **En prubas**
+- XML RSIF  * **En prubas**
 - Hash y QR  
 - Inalterabilidad  
 - Evidencia y trazabilidad  
