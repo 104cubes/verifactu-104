@@ -381,17 +381,66 @@ class ActionsVerifactu104 extends CommonHookActions
      * Hook: pdfgeneration
      * Añade página adicional con QR y hash al generar el PDF de una factura validada.
      */
-    public function afterPDFCreation($parameters, &$pdf, &$action, $hookmanager)
-    {
-        global $conf;
+public function afterPDFCreation($parameters, &$pdf, &$action, $hookmanager)
+{
+    global $conf;
 
-        dol_syslog("VERIFACTU_HOOK: afterPDFCreation() EJECUTADO", LOG_DEBUG);
-        // === Reconstruir factura correctamente (Dolibarr pasa un objeto incompleto) ===
-        $raw = $parameters['object'] ?? null;
-        if (empty($raw)) {
-            dol_syslog("VERIFACTU_HOOK: ERROR → parameters['object'] vacío", LOG_ERR);
-            return 0;
-        }
+    dol_syslog("VERIFACTU_HOOK: afterPDFCreation() EJECUTADO", LOG_DEBUG);
+
+    // =============================
+    // 1) VERIFICAR QUE ES UNA FACTURA
+    // =============================
+    if (empty($parameters['object']) || ! is_object($parameters['object'])) {
+        dol_syslog("VF_HOOK: No hay objeto → abortando", LOG_DEBUG);
+        return 0;
+    }
+
+    $raw = $parameters['object'];
+
+    if ($raw->element !== 'facture') {
+        dol_syslog("VF_HOOK: No es factura → es '$raw->element' → abortando", LOG_DEBUG);
+        return 0;
+    }
+
+    // =============================
+    // 2) RECONSTRUIR FACTURA COMPLETA
+    // =============================
+    $id = !empty($raw->id) ? $raw->id : (!empty($raw->rowid) ? $raw->rowid : 0);
+    if (!$id) {
+        dol_syslog("VF_HOOK: No se pudo determinar ID factura", LOG_ERR);
+        return 0;
+    }
+
+    $facture = new Facture($this->db);
+    if ($facture->fetch($id) <= 0) {
+        dol_syslog("VF_HOOK: fetch() falló para ID=$id", LOG_ERR);
+        return 0;
+    }
+    $facture->fetch_thirdparty();
+    $facture->fetch_optionals();
+
+    // =============================
+    // 3) SOLO FACTURAS VALIDADAS (NO PROVISIONALES)
+    // =============================
+    if ($facture->statut != Facture::STATUS_VALIDATED) {
+        dol_syslog("VF_HOOK: Factura NO validada (statut=$facture->statut) → abortando", LOG_DEBUG);
+        return 0;
+    }
+
+    // =============================
+    // 4) SOLO FACTURAS "REALES"
+    //    Y NO PRESUPUESTOS/PEDIDOS/ALBARANES
+    // =============================
+    if (!empty($facture->type) && !in_array($facture->type, [
+        Facture::TYPE_STANDARD,
+        Facture::TYPE_DEPOSIT,
+        Facture::TYPE_CREDIT_NOTE
+    ])) {
+        dol_syslog("VF_HOOK: Tipo factura no válido para VeriFactu → tipo=$facture->type", LOG_DEBUG);
+        return 0;
+    }
+
+    // A partir de aquí ya puedes ejecutar el resto del hook
 
         // Detectar ID correctamente
         $id = 0;
