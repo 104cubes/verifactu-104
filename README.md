@@ -20,7 +20,7 @@ Este módulo tiene las funcionallidades para cumplircon la **integridad, trazabi
 
 - Hash encadenado  
 - Código QR regulado  
-- XML conforme al esquema RSIF (AEAT)  
+- XML conforme al esquema RSIF (AEAT)  **Probando**
 - Registro de acciones  
 - Bloqueo y control de modificaciones  
 - Página adicional en el PDF  
@@ -34,7 +34,7 @@ Este módulo tiene las funcionallidades para cumplircon la **integridad, trazabi
 Este módulo permite al usuario cumplir:
 
 - Registro encadenado  
-- XML RSIF  
+- XML RSIF **En prubas**
 - Hash y QR  
 - Inalterabilidad  
 - Evidencia y trazabilidad  
