@@ -20,7 +20,7 @@ Este módulo tiene las funcionallidades para cumplircon la **integridad, trazabi
 
 - Hash encadenado  
 - Código QR regulado  
-- XML conforme al esquema RSIF (AEAT)  **Probando**
+- XML conforme al esquema RSIF (AEAT) * **Probando**
 - Registro de acciones  
 - Bloqueo y control de modificaciones  
 - Página adicional en el PDF  
@@ -62,7 +62,8 @@ Sin modificar ninguna plantilla PDF de Dolibarr, añade automáticamente una pá
 
 Compatible con cualquier modelo de factura de dolibarr, incluso personalizados.
 
-### ✔ 4. Generación del XML RSIF completo
+### ✔ 4. Generación del XML RSIF completo 
+* **Probando**
 Cada factura genera un XML conforme al esquema oficial (`SuministroLR.xsd`).  
 Se guarda en el directorio de documentos de la factura junto al PDF y el QR.
 
@@ -74,7 +75,7 @@ El módulo documenta eventos internos asociados a:
 - Validación  
 - Cálculo de hash  
 - Generación de QR  
-- Generación de XML
+- Generación de XML * **Probando**
 - Registro de altas de factura, subsanación, anulación, rectificativas, reintentos.
 - Cualquier operación crítica RSIF  
 
