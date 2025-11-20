@@ -381,66 +381,66 @@ class ActionsVerifactu104 extends CommonHookActions
      * Hook: pdfgeneration
      * Añade página adicional con QR y hash al generar el PDF de una factura validada.
      */
-public function afterPDFCreation($parameters, &$pdf, &$action, $hookmanager)
-{
-    global $conf;
+    public function afterPDFCreation($parameters, &$pdf, &$action, $hookmanager)
+    {
+        global $conf;
 
-    dol_syslog("VERIFACTU_HOOK: afterPDFCreation() EJECUTADO", LOG_DEBUG);
+        dol_syslog("VERIFACTU_HOOK: afterPDFCreation() EJECUTADO", LOG_DEBUG);
 
-    // =============================
-    // 1) VERIFICAR QUE ES UNA FACTURA
-    // =============================
-    if (empty($parameters['object']) || ! is_object($parameters['object'])) {
-        dol_syslog("VF_HOOK: No hay objeto → abortando", LOG_DEBUG);
-        return 0;
-    }
+        // =============================
+        // 1) VERIFICAR QUE ES UNA FACTURA
+        // =============================
+        if (empty($parameters['object']) || ! is_object($parameters['object'])) {
+            dol_syslog("VF_HOOK: No hay objeto → abortando", LOG_DEBUG);
+            return 0;
+        }
 
-    $raw = $parameters['object'];
+        $raw = $parameters['object'];
 
-    if ($raw->element !== 'facture') {
-        dol_syslog("VF_HOOK: No es factura → es '$raw->element' → abortando", LOG_DEBUG);
-        return 0;
-    }
+        if ($raw->element !== 'facture') {
+            dol_syslog("VF_HOOK: No es factura → es '$raw->element' → abortando", LOG_DEBUG);
+            return 0;
+        }
 
-    // =============================
-    // 2) RECONSTRUIR FACTURA COMPLETA
-    // =============================
-    $id = !empty($raw->id) ? $raw->id : (!empty($raw->rowid) ? $raw->rowid : 0);
-    if (!$id) {
-        dol_syslog("VF_HOOK: No se pudo determinar ID factura", LOG_ERR);
-        return 0;
-    }
+        // =============================
+        // 2) RECONSTRUIR FACTURA COMPLETA
+        // =============================
+        $id = !empty($raw->id) ? $raw->id : (!empty($raw->rowid) ? $raw->rowid : 0);
+        if (!$id) {
+            dol_syslog("VF_HOOK: No se pudo determinar ID factura", LOG_ERR);
+            return 0;
+        }
 
-    $facture = new Facture($this->db);
-    if ($facture->fetch($id) <= 0) {
-        dol_syslog("VF_HOOK: fetch() falló para ID=$id", LOG_ERR);
-        return 0;
-    }
-    $facture->fetch_thirdparty();
-    $facture->fetch_optionals();
+        $facture = new Facture($this->db);
+        if ($facture->fetch($id) <= 0) {
+            dol_syslog("VF_HOOK: fetch() falló para ID=$id", LOG_ERR);
+            return 0;
+        }
+        $facture->fetch_thirdparty();
+        $facture->fetch_optionals();
 
-    // =============================
-    // 3) SOLO FACTURAS VALIDADAS (NO PROVISIONALES)
-    // =============================
-    if ($facture->statut != Facture::STATUS_VALIDATED) {
-        dol_syslog("VF_HOOK: Factura NO validada (statut=$facture->statut) → abortando", LOG_DEBUG);
-        return 0;
-    }
+        // =============================
+        // 3) SOLO FACTURAS VALIDADAS (NO PROVISIONALES)
+        // =============================
+        if ($facture->statut != Facture::STATUS_VALIDATED) {
+            dol_syslog("VF_HOOK: Factura NO validada (statut=$facture->statut) → abortando", LOG_DEBUG);
+            return 0;
+        }
 
-    // =============================
-    // 4) SOLO FACTURAS "REALES"
-    //    Y NO PRESUPUESTOS/PEDIDOS/ALBARANES
-    // =============================
-    if (!empty($facture->type) && !in_array($facture->type, [
-        Facture::TYPE_STANDARD,
-        Facture::TYPE_DEPOSIT,
-        Facture::TYPE_CREDIT_NOTE
-    ])) {
-        dol_syslog("VF_HOOK: Tipo factura no válido para VeriFactu → tipo=$facture->type", LOG_DEBUG);
-        return 0;
-    }
+        // =============================
+        // 4) SOLO FACTURAS "REALES"
+        //    Y NO PRESUPUESTOS/PEDIDOS/ALBARANES
+        // =============================
+        if (!empty($facture->type) && !in_array($facture->type, [
+            Facture::TYPE_STANDARD,
+            Facture::TYPE_DEPOSIT,
+            Facture::TYPE_CREDIT_NOTE
+        ])) {
+            dol_syslog("VF_HOOK: Tipo factura no válido para VeriFactu → tipo=$facture->type", LOG_DEBUG);
+            return 0;
+        }
 
-    // A partir de aquí ya puedes ejecutar el resto del hook
+        // A partir de aquí ya puedes ejecutar el resto del hook
 
         // Detectar ID correctamente
         $id = 0;
@@ -475,6 +475,7 @@ public function afterPDFCreation($parameters, &$pdf, &$action, $hookmanager)
         }
 
         dol_syslog("VERIFACTU_HOOK: factura reconstruida correctamente ID=$object->id REF=$object->ref", LOG_DEBUG);
+        dol_syslog("Datos factura: " . print_r($object, true), LOG_DEBUG);
 
         // Rutas de archivos
         try {
@@ -694,23 +695,7 @@ public function afterPDFCreation($parameters, &$pdf, &$action, $hookmanager)
             $builder = new VerifactuXMLBuilder($this->db, $conf, $tipoFacturaAeat);
             // $xml_soap = $builder->buildAltaSoapAndSave($object, $hash_prev, $hash_actual, $timestamp, $xml_path);
             // === Crear XML interno ===
-
-            $data = [
-                'emisor_nif'      => $emisor_nif,
-                'emisor_nombre'   => $nombre_empresa,
-                'receptor_nif'    => $facture->thirdparty->idprof1,
-                'ref'             => $ref_factura,
-                'fecha'           => dol_print_date($facture->date, '%Y-%m-%d'),
-                'tipo_factura'    => $tipoFacturaAeat, // F1, R1, etc
-                'descripcion'     => $facture->note_public ?: 'Factura emitida mediante VeriFactu',
-                'base'            => number_format($facture->total_ht, 2, '.', ''),
-                'iva'             => number_format($facture->total_tva, 2, '.', ''),
-                'total'           => number_format($facture->total_ttc, 2, '.', ''),
-                'hash_prev'       => $hash_prev,
-                'hash_actual'     => $hash_actual,
-                'timestamp'       => date('c', dol_now()),
-            ];
-            $xml_registro = $builder->buildRegistroAltaXML($data);
+            $xml_registro = $builder->buildRegistroAltaXML($object, $tipoFacturaAeat);
 
             // === Envolver en SOAP ===
             //    $xml_soap = $builder->wrapSoapEnvelope($xml_registro);
