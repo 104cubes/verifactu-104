@@ -6,7 +6,7 @@
 #### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable del cumplimiento vía certificado accesible desde el software.. ####
 
 #### 📌 Hasta ahora ningún desarrollador de módulo veri*factu para Dolybarr se hace responsable del cumplimiento de la normativa vía certificado del desarrollador del cumplimiento. Punto obligatorio para vender software veri*factu.
-#### ⚠️  Si en tus pruebas ves un error 1208 es porque para probar este software y usarlo como empresa debes obtener tu "firma de sello". La forma de obtenerlo es a través de agencias autorizadas y el precio mínimo son 240 €/año si es a través de la FNMT. Nosotros lo estamos probando con nuestro proopio certificado
+#### ⚠️  Si en tus pruebas ves un error 1208 es porque para probar este software y usarlo como empresa debes obtener tu "firma de sello" (un archivo .p12 concreto que se llama "de sello". La forma de obtenerlo es a través de agencias autorizadas y el precio mínimo son 240 €/año si es a través de la FNMT. Nosotros lo estamos probando con nuestro proopio certificado
 
 
 ---
