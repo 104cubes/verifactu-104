@@ -5,9 +5,8 @@
 
 #### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable del cumplimiento vía certificado accesible desde el software.. ####
 
-#### 📌 Hasta ahora ningún desarrollador de módulo veri*factu para Dolybarr se hace responsable del cumplimiento de la normativa vía certificado del desarrollador del cumplimiento. Punto obligatorio para PYMES en la normativa sancionadora de la Ley Antifraude. Si como PYME usas un SIF, debe ser certificado por un desarrollador, si no, como pyme pagas 50.000 € por usar un SIF sin certificado del desarrollador. 
-
-#### ⚠️  Para probar este software y usarlo como empresa debes obtener tu "firma de sello". La forma de obtenerlo es a través de agencias autorizadas y el precio mínimo son 240 €/año atres de la FNMT u otros. Nosotros lo estamos probando con nuestro proopio certificado
+#### 📌 Hasta ahora ningún desarrollador de módulo veri*factu para Dolybarr se hace responsable del cumplimiento de la normativa vía certificado del desarrollador del cumplimiento. Punto obligatorio para vender software veri*factu.
+#### ⚠️  Para probar este software y usarlo como empresa debes obtener tu "firma de sello". La forma de obtenerlo es a través de agencias autorizadas y el precio mínimo son 240 €/año si es a través de la FNMT. Nosotros lo estamos probando con nuestro proopio certificado
 
 
 ---
