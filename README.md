@@ -1,13 +1,13 @@
 # Módulo Dolibarr — Verifactu 104 (RSIF para S.L.)
 
-### APROXIMACIÓN al Cumplimiento con Ley antifraude. Reglamento RSIF — Compatible con VeriFactu.
+### Cumplimiento con Ley antifraude. Reglamento RSIF — Compatible con VeriFactu.
 
-*Pendiente:
-- Probando aún la generación del XML según tipo de registro en VERI*FACTU (clase xmlBuilder)
 
 #### ⚠️  Quien instale y o utilice este módulo en producción debe verificar y hacerse responsable del cumplimiento vía certificado accesible desde el software.. ####
 
 #### 📌 Hasta ahora ningún desarrollador de módulo veri*factu para Dolybarr se hace responsable del cumplimiento de la normativa vía certificado del desarrollador del cumplimiento. Punto obligatorio para PYMES en la normativa sancionadora de la Ley Antifraude. Si usas un SIF, debe ser certificado por un desarrollador, si no, como PYME pagas 50.000 €. 
+
+#### ⚠️  Para probar este software y usarlo como empresa debes obtener tu "firma de sello". La forma de obtenerlo es a través de agencias autorizadas y el precio mínimo on 240 €/año. Nootros lo estamos probando con nuestro proopio certofocado
 
 
 ---
